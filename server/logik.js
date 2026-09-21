@@ -1,11 +1,9 @@
-export const dice = Array.from({length: 5}, function (_, i) {
+export let dice = Array.from({length: 5}, function (_, i) {
     return i + 1;
 })
 
 export function rollRandomDice() {
-	dice.forEach(element => {
-        element = Math.floor(Math.random() * 6) + 1;
-    });
+    dice = dice.map(() => Math.floor(Math.random() * 6) + 1);
     return dice;
 }
 
