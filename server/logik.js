@@ -1,75 +1,79 @@
-const diceObject = {
-    eyes: 0
-};
-
-let dice = []; // Oprettet timt Array
-for (let i = 0; i < 5; i++) { // tæller 5 loops
-    dice.push({ ...diceObject }); // For hvert loop tager den en ny kopi af diceObject.
-}
-
-// Metode som kaster terningen, 
-function rollDice(diceToRoll = dice) {
-    for (const die of diceToRoll) {
-        die.eyes = Math.floor(Math.random() * 6) + 1;
-    }
-    return diceToRoll;
-}
+let dice = [];
+dice.length = 5;
 
 // Summen af alle terningerne i dice.
-class YatzyResultCalculator {
-    constructor(dice) {
-        this.dice = dice;
-    }
-
-    upperSectionScore(eyes) {
-        //TODO: Implement upperSectionScore method.
-        return 0;
-    }
-
-    onePairScore() {
-        //TODO: implement onePairScore method.
-        return 0;
-    }
-
-    twoPairScore() {
-        //TODO: implement twoPairScore method.
-        return 0;
-    }
-
-    threeOfAKindScore() {
-        //TODO: implement threeOfAKindScore method.
-        return 0;
-    }
-
-    fourOfAKindScore() {
-        //TODO: implement fourOfAKindScore method.
-        return 0;
-    }
-
-    smallStraightScore() {
-        //TODO: implement smallStraightScore method.
-        return 0;
-    }
-
-    largeStraightScore() {
-        //TODO: implement largeStraightScore method.
-        return 0;
-    }
-
-    fullHouseScore() {
-        //TODO: implement fullHouseScore method.
-        return 0;
-    }
-
-    chanceScore() {
-        //TODO: implement chanceScore method.
-        return 0;
-    }
-
-    yatzyScore() {
-        //TODO: implement yatzyScore method.
-        return 0;
-    }
+function upperSectionScore(eyes) {
+    let sum = 0;
+    dice.forEach(diceObject => {
+        sum += diceObject.eyes;
+    })
+    return sum;
 }
+
+function onePairScore() {
+    let score = 0;
+    for (let index = 6; index >= 1; index--) {
+        if (dice[index] >=2) score = index * 2;
+                
+    }
+    return score;
+}
+
+function twoPairScore() {
+    let score = 0;
+    let pairs = 0;
+    for (let index = 6; index >= 1; index--) {
+        if (dice[index] >= 2) {
+            pairs++;
+            score += index * 2;
+            if (pairs === 2) return score;
+        }        
+    }
+    return 0;
+}
+
+function threeOfAKindScore() {
+    let score = 0;
+    for (let index = 6; index >= 1; index--) {
+        if (dice[index] >= 3) return index * 3;
+        
+    }
+    return 0;
+}
+
+function fourOfAKindScore() {
+    let score = 0;
+    for (let index = 6; index >= 1; index--) {
+        if (dice[index] >= 4) return index * 0;
+        
+    }
+    return 0;
+}
+
+function smallStraightScore() {
+    //TODO: implement smallStraightScore method.
+    return 0;
+}
+
+function largeStraightScore() {
+    //TODO: implement largeStraightScore method.
+    return 0;
+}
+
+function fullHouseScore() {
+    //TODO: implement fullHouseScore method.
+    return 0;
+}
+
+function chanceScore() {
+    //TODO: implement chanceScore method.
+    return 0;
+}
+
+function yatzyScore() {
+    //TODO: implement yatzyScore method.
+    return 0;
+}
+
 
 module.exports = { dice, diceObject, rollDice, diceSum, YatzyResultCalculator };
