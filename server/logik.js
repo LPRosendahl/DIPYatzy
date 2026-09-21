@@ -2,8 +2,11 @@ export const dice = Array.from({length: 5}, function (_, i) {
     return i + 1;
 })
 
-export function randomDiceValue() {
-	return Math.floor(Math.random() * 6) + 1;
+export function rollRandomDice() {
+	dice.forEach(element => {
+        element = Math.floor(Math.random() * 6) + 1;
+    });
+    return dice;
 }
 
 export function countEyes() {
