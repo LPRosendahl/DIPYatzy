@@ -29,8 +29,7 @@ body {
 
 .panel {
 	flex: 1;
-	padding: 28px; /* Adds space around the content inside each panel. */
-	border: 1px solid rgba(255, 248, 240, 0.4); /* Softly separates panels from the background. */
+	padding: 28px;
 	border-radius: 18px;
 	background: rgba(255, 249, 220, 0.7); /* Keeps the panel light while showing the gradient through it. */
 	box-shadow: 0 18px 40px rgba(126, 65, 55, 0.16); /* Gives the panels gentle depth. */
