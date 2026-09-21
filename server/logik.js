@@ -21,25 +21,27 @@ export function countEyes() {
 export function upperSectionScore(eyes) {
     let sum = 0;
     dice.forEach(val => {
-        
+        if (val === eyes) {
+            sum += val;
+        }
     })
     return sum;
 }
 
 export function onePairScore() {
-    let score = 0;
+    const counts = countEyes();
     for (let index = 6; index >= 1; index--) {
-        if (dice[index] >=2) score = index * 2;
-                
+        if (counts[index] >=2) score = index * 2;
     }
     return score;
 }
 
 export function twoPairScore() {
+    const counts = countEyes();
     let score = 0;
     let pairs = 0;
     for (let index = 6; index >= 1; index--) {
-        if (dice[index] >= 2) {
+        if (counts[index] >= 2) {
             pairs++;
             score += index * 2;
             if (pairs === 2) return score;
@@ -49,18 +51,17 @@ export function twoPairScore() {
 }
 
 export function threeOfAKindScore() {
-    let score = 0;
+    const counts = countEyes();
     for (let index = 6; index >= 1; index--) {
-        if (dice[index] >= 3) return index * 3;
-        
+        if (counts[index] >= 3) return index * 3;
     }
     return 0;
 }
 
 export function fourOfAKindScore() {
-    let score = 0;
+    const counts = countEyes();
     for (let index = 6; index >= 1; index--) {
-        if (dice[index] >= 4) return index * 0;
+        if (counts[index] >= 4) return index * 0;
         
     }
     return 0;
