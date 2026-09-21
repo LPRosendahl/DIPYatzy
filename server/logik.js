@@ -1,4 +1,4 @@
-const dice = Array.from({length: 5}, function (_, i) {
+export const dice = Array.from({length: 5}, function (_, i) {
     return i + 1;
 })
 
@@ -65,28 +65,46 @@ export function fourOfAKindScore() {
 }
 
 export function smallStraightScore() {
-    //TODO: implement smallStraightScore method.
-    return 0;
+    const counts = countEyes();
+    for (let index = 1; index <=5; index++) {
+        if (counts[index] != 1) return 0;
+    }
+    return 15;
 }
 
 export function largeStraightScore() {
-    //TODO: implement largeStraightScore method.
-    return 0;
+    const counts = countEyes();
+    for (let index = 2; index <= 6; index++) {
+        if (counts[index] != 1) return 0; 
+    }
+    return 20;
 }
 
 export function fullHouseScore() {
-    //TODO: implement fullHouseScore method.
+    const counts = countEyes();
+    let three = 0, two = 0;
+    for (let index = 1; index <= 6; index++) {
+        if (counts[index] === 3) three = index * 3;
+        if (counts[index] === 2) two = index * 2;        
+    }
+    if (three > 0 && two > 0) {
+        return three + two;
+    }
     return 0;
 }
 
 export function chanceScore() {
-    //TODO: implement chanceScore method.
-    return 0;
+    let sum = 0;
+    dice.forEach(val => {
+        sum += val;
+    })
+    return sum;
 }
 
 export function yatzyScore() {
-    //TODO: implement yatzyScore method.
-    return 0;
+    let first = dice[0].valueOf;
+    dice.forEach(val => {
+        if (val != first) return 0;
+    })
+    return 50;
 }
-
-
