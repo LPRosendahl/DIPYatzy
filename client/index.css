@@ -1,0 +1,117 @@
+body {
+	min-height: 100vh;
+	margin: 0;
+	padding: 32px;
+	background: linear-gradient(135deg, #f8f3c8 0%, #f8d6a4 48%, #ef9a79 100%);
+}
+
+.layout {
+	display: flex;
+	gap: 24px;
+	width: min(100%, 1000px);
+	align-items: flex-start;
+	margin: 0 auto;
+}
+
+.column {
+	display: flex;
+	gap: 24px;
+}
+
+.left-column {
+	flex: 1 1 70%; /* Gives the score section most of the available width. */
+	flex-direction: column; /* Stacks the score content vertically. */
+}
+
+.right-column {
+	flex: 0 1 240px;
+}
+
+.panel {
+	flex: 1;
+	padding: 28px;
+	border-radius: 18px;
+	background: rgba(255, 249, 220, 0.7); /* Keeps the panel light while showing the gradient through it. */
+	box-shadow: 0 18px 40px rgba(126, 65, 55, 0.16); /* Gives the panels gentle depth. */
+	backdrop-filter: blur(8px);
+}
+
+h1,
+h2 {
+	margin-top: 0;
+}
+
+.score-list {
+	display: grid;
+	grid-template-columns: minmax(130px, 1fr) 64px; /* Flexible labels beside fixed-width score fields. */
+	gap: 9px 16px;
+	max-width: 320px;
+}
+
+.score-list p {
+	display: contents;
+}
+
+.score-list input {
+	width: 64px; /* Keeps every score field the same compact size. */
+	border: 1px solid #c9997f; /* Defines the field without overpowering the panel. */
+	border-radius: 4px;
+	background: #fffdf3; /* Provides a readable contrast for entered scores. */
+	font: inherit; /* Matches the field text to the rest of the interface. */
+}
+
+.dice-list {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+}
+
+.dice-list img {
+	width: 73px;
+	height: auto;
+}
+
+button {
+	display: block;
+	width: 100%;
+	margin-top: 22px;
+	padding: 12px 18px;
+	border: 0;
+	border-radius: 8px;
+	color: #fff8f0;
+	font-weight: bold;
+	background: #ce6c76;
+}
+
+button:hover {
+	background: #652835;
+}
+
+@media (max-width: 500px) {
+	body {
+		padding: 16px;
+	}
+
+	.layout {
+		flex-direction: column;
+	}
+
+	.right-column {
+		width: 100%;
+	}
+
+	.right-column .panel {
+		width: 100%;
+	}
+
+	.dice-list {
+		flex-direction: row;
+		flex-wrap: wrap;
+		justify-content: center;
+	}
+
+	.dice-list img {
+		width: 75px;
+	}
+}
