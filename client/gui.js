@@ -1,8 +1,16 @@
-import { chanceScore, fourOfAKindScore, fullHouseScore, largeStraightScore, onePairScore, rollRandomDice, smallStraightScore, threeOfAKindScore, twoPairScore, upperSectionScore, yatzyScore } from "../server/logik.js";
+import { chanceScore, fourOfAKindScore, fullHouseScore, holdDie, largeStraightScore, onePairScore, rollRandomDice, smallStraightScore, threeOfAKindScore, twoPairScore, upperSectionScore, yatzyScore } from "../server/logik.js";
 
 const diceImages = Array.from(document.querySelectorAll(".dice-list img"));
+const diceButtons = Array.from(document.querySelectorAll(".dice-list button"));
 const rollButton = document.getElementById("roll-button");
 const scoreInputs = Array.from(document.querySelectorAll(".score-list input"));
+
+diceButtons.forEach((button, index) => {
+    button.addEventListener("click", () => {
+        const isHeld = holdDie(index);
+        button.classList.toggle("held", isHeld);
+    });
+});
 
 const dieImageNames = [
     "one",
@@ -12,6 +20,7 @@ const dieImageNames = [
     "five",
     "six"
 ];
+
 
 function renderDice(diceValues) {
     diceValues.forEach((value, index) => {

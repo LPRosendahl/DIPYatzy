@@ -2,9 +2,25 @@ export let dice = Array.from({length: 5}, function (_, i) {
     return i + 1;
 })
 
+let heldDice = [false, false, false, false, false];
+
+// Ændrer kun de terninger som ikke er holdt 
 export function rollRandomDice() {
-    dice = dice.map(() => Math.floor(Math.random() * 6) + 1);
+    dice = dice.map((value, index) => {
+        // Terninger som allerede holdes returnerer den samme værdi
+        if (heldDice[index]) {
+            return value;
+        }
+        // Returnerer ny terning.
+        return Math.floor(Math.random() * 6) + 1;
+    });
+        
     return dice;
+}
+// Skifter tilstand på die, så en terning som ikke holdes nu holdes.
+export function holdDie(index) {
+    heldDice[index] = !heldDice[index];
+    return heldDice[index];
 }
 
 export function countEyes() {
