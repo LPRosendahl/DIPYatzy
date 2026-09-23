@@ -167,7 +167,7 @@ export function calculateUpperSum(scoreInputs) {
     let total = 0;
 
     scoreInputs.forEach((input, index) => {
-        if(heldScores[index]) {
+        if(heldScores[index] && index < 6) {
             total += Number(input.value) || 0;
         }
     });
