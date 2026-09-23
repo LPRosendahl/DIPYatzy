@@ -56,8 +56,19 @@ h2 {
 	display: grid;
 	grid-column: 1 / -1;
 	grid-template-columns: minmax(130px, 1fr) 64px;
-	padding: 9px 0;
+	padding: 9px 0 ;
+	margin-bottom: -9px;
 	border-top: 1px solid #c9997f;
+	padding-bottom: 0px;
+}
+
+
+.score-list p.bonus-row {
+	display: grid;
+	grid-column: 1 / -1;
+	grid-template-columns: minmax(130px, 1fr) 64px;
+	margin-bottom: 14px;
+	margin-top: 9px;
 }
 
 .score-list input, output {
@@ -100,10 +111,6 @@ h2 {
 	width: 40px;
     text-align: center;
 
-}
-
-#upperSum.bonus-reached {
-	color: green;
 }
 
 button {

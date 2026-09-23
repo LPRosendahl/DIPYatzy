@@ -31,7 +31,6 @@ scoreInputs.forEach((button, index) => {
 
         sum.value = calculateTotalSum(scoreInputs);
         upperSum.value = calculateUpperSum(scoreInputs);
-        upperSum.classList.toggle("bonus-reached", Number(upperSum.value) >= 63);
     });
 })
 
