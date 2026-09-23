@@ -1,4 +1,5 @@
 export let counter = 3;
+let bonusReached = false;
 export let dice = Array.from({length: 5}, function (_, i) {
     return i + 1;
 })
@@ -154,6 +155,10 @@ export function yatzyScore() {
 export function calculateTotalSum(scoreInputs) {
     let total = 0;
 
+    if (bonusReached) {
+        total += 50;
+    }
+
     scoreInputs.forEach((input, index) => {
         if (heldScores[index]) {
             total += Number(input.value) || 0;
@@ -172,5 +177,13 @@ export function calculateUpperSum(scoreInputs) {
         }
     });
     return total;
+}
 
+export function calculateBonus(scoreInputs) {
+    if (calculateUpperSum(scoreInputs) >= 63) {
+        bonusReached = true;
+        return 50;
+    }
+
+    return 0;
 }

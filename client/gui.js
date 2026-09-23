@@ -1,4 +1,4 @@
-import { chanceScore, fourOfAKindScore, fullHouseScore, holdDie, holdScore, heldDice, heldScores, largeStraightScore, onePairScore, rollRandomDice, smallStraightScore, threeOfAKindScore, twoPairScore, upperSectionScore, yatzyScore, counter, calculateTotalSum, calculateUpperSum } from "../server/logik.js";
+import { chanceScore, fourOfAKindScore, fullHouseScore, holdDie, holdScore, heldDice, heldScores, largeStraightScore, onePairScore, rollRandomDice, smallStraightScore, threeOfAKindScore, twoPairScore, upperSectionScore, yatzyScore, counter, calculateTotalSum, calculateUpperSum, calculateBonus} from "../server/logik.js";
 
 const diceImages = Array.from(document.querySelectorAll(".dice-list img"));
 const diceButtons = Array.from(document.querySelectorAll(".dice-list button"));
@@ -7,6 +7,7 @@ const scoreInputs = Array.from(document.querySelectorAll(".score-list input"));
 var rollCounter = document.getElementById("rollCounter");
 let sum = document.getElementById("sum");
 let upperSum = document.getElementById("upperSum")
+let bonus = document.getElementById("bonus");
 
 diceButtons.forEach((button, index) => {
     button.addEventListener("click", () => {
@@ -29,9 +30,10 @@ scoreInputs.forEach((button, index) => {
         // Roll the dice, so no cheating ;)
         rollButton.click();
 
-        sum.value = calculateTotalSum(scoreInputs);
+        sum.textContent = calculateTotalSum(scoreInputs);
         upperSum.value = calculateUpperSum(scoreInputs);
         upperSum.classList.toggle("bonus-reached", Number(upperSum.value) >= 63);
+        bonus.textContent = calculateBonus(scoreInputs);
     });
 })
 
