@@ -150,3 +150,27 @@ export function yatzyScore() {
         return 0;
     }
 }
+
+export function calculateTotalSum(scoreInputs) {
+    let total = 0;
+
+    scoreInputs.forEach((input, index) => {
+        if (heldScores[index]) {
+            total += Number(input.value) || 0;
+        }
+    });
+
+    return total;
+}
+
+export function calculateUpperSum(scoreInputs) {
+    let total = 0;
+
+    scoreInputs.forEach((input, index) => {
+        if(heldScores[index]) {
+            total += Number(input.value) || 0;
+        }
+    });
+    return total;
+
+}

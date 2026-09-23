@@ -1,10 +1,12 @@
-import { chanceScore, fourOfAKindScore, fullHouseScore, holdDie, holdScore, heldDice, heldScores, largeStraightScore, onePairScore, rollRandomDice, smallStraightScore, threeOfAKindScore, twoPairScore, upperSectionScore, yatzyScore, counter } from "../server/logik.js";
+import { chanceScore, fourOfAKindScore, fullHouseScore, holdDie, holdScore, heldDice, heldScores, largeStraightScore, onePairScore, rollRandomDice, smallStraightScore, threeOfAKindScore, twoPairScore, upperSectionScore, yatzyScore, counter, calculateTotalSum, calculateUpperSum } from "../server/logik.js";
 
 const diceImages = Array.from(document.querySelectorAll(".dice-list img"));
 const diceButtons = Array.from(document.querySelectorAll(".dice-list button"));
 const rollButton = document.getElementById("roll-button");
 const scoreInputs = Array.from(document.querySelectorAll(".score-list input"));
 var rollCounter = document.getElementById("rollCounter");
+let sum = document.getElementById("sum");
+let upperSum = document.getElementById("upperSum")
 
 diceButtons.forEach((button, index) => {
     button.addEventListener("click", () => {
@@ -27,7 +29,8 @@ scoreInputs.forEach((button, index) => {
         // Roll the dice, so no cheating ;)
         rollButton.click();
 
-        calculateTotalSum();
+        sum.value = calculateTotalSum(scoreInputs);
+        upperSum.value = calculateUpperSum(scoreInputs);
     });
 })
 
@@ -61,19 +64,7 @@ function renderScoreArea(scores) {
     });
 }
 
-let sum = document.getElementById("sum");
 
-function calculateTotalSum() {
-    let total = 0;
-
-    scoreInputs.forEach((input, index) => {
-        if (heldScores[index]) {
-            total += Number(input.value) || 0;
-        }
-    });
-
-    sum.value = total;
-}
 
 
 
