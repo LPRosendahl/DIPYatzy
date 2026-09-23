@@ -18,9 +18,13 @@ scoreInputs.forEach((button, index) => {
         heldScores[index] = isHeld;
         button.classList.toggle("held", isHeld);
 
+        // Unholds all buttons
         diceButtons.forEach((diceButton, diceIndex) => {
             diceButton.classList.toggle("held", heldDice[diceIndex]);
         });
+
+        // Roll the dice, so no cheating ;)
+        rollButton.click();
 
         calculateTotalSum();
     });
