@@ -1,5 +1,4 @@
 export let counter = 3;
-let bonusReached = false;
 export let dice = Array.from({length: 5}, function (_, i) {
     return i + 1;
 })
@@ -8,6 +7,7 @@ export let heldDice = [false, false, false, false, false];
 export let heldScores = Array.from({ length: 15}, function (_, i) {
     return false;
 })
+let scoreValues = Array.from({ length: 15 }, () => 0);
 
 // Ændrer kun de terninger som ikke er holdt 
 export function rollRandomDice() {
@@ -32,14 +32,47 @@ export function holdDie(index) {
 }
 
 export function holdScore(index) {
-    heldScores[index] = !heldScores[index];
+    if (heldScores[index]) {
+        return true;
+    }
+
+    scoreValues[index] = scoreForCategory(index);
+    heldScores[index] = true;
     stopDiceHold();
     counter = 3; //.reset counter
-    return heldScores[index];
+    return true;
 }
 
 function stopDiceHold() {
     heldDice = [false, false, false, false, false];
+}
+
+function scoreForCategory(index) {
+    const scores = [
+        upperSectionScore(1),
+        upperSectionScore(2),
+        upperSectionScore(3),
+        upperSectionScore(4),
+        upperSectionScore(5),
+        upperSectionScore(6),
+        onePairScore(),
+        twoPairScore(),
+        threeOfAKindScore(),
+        fourOfAKindScore(),
+        smallStraightScore(),
+        largeStraightScore(),
+        fullHouseScore(),
+        chanceScore(),
+        yatzyScore()
+    ];
+
+    return scores[index] ?? 0;
+}
+
+export function scoreValuesForDisplay() {
+    return Array.from({ length: 15 }, (_, index) => {
+        return heldScores[index] ? scoreValues[index] : scoreForCategory(index);
+    });
 }
 
 export function countEyes() {
@@ -152,36 +185,35 @@ export function yatzyScore() {
     }
 }
 
-export function calculateTotalSum(scoreInputs) {
+export function calculateTotalSum() {
     let total = 0;
 
-    if (bonusReached) {
+    if (calculateUpperSum() >= 63) {
         total += 50;
     }
 
-    scoreInputs.forEach((input, index) => {
-        if (heldScores[index]) {
-            total += Number(input.value) || 0;
+    heldScores.forEach((isHeld, index) => {
+        if (isHeld) {
+            total += scoreValues[index];
         }
     });
 
     return total;
 }
 
-export function calculateUpperSum(scoreInputs) {
+export function calculateUpperSum() {
     let total = 0;
 
-    scoreInputs.forEach((input, index) => {
-        if(heldScores[index] && index < 6) {
-            total += Number(input.value) || 0;
+    heldScores.forEach((isHeld, index) => {
+        if (isHeld && index < 6) {
+            total += scoreValues[index];
         }
     });
     return total;
 }
 
-export function calculateBonus(scoreInputs) {
-    if (calculateUpperSum(scoreInputs) >= 63) {
-        bonusReached = true;
+export function calculateBonus() {
+    if (calculateUpperSum() >= 63) {
         return 50;
     }
 

@@ -1,4 +1,4 @@
-import { chanceScore, fourOfAKindScore, fullHouseScore, holdDie, holdScore, heldDice, heldScores, largeStraightScore, onePairScore, rollRandomDice, smallStraightScore, threeOfAKindScore, twoPairScore, upperSectionScore, yatzyScore, counter, calculateTotalSum, calculateUpperSum, calculateBonus} from "../server/logik.js";
+import { holdDie, holdScore, heldDice, heldScores, rollRandomDice, counter, calculateTotalSum, calculateUpperSum, calculateBonus, scoreValuesForDisplay } from "../server/logik.js";
 
 const diceImages = Array.from(document.querySelectorAll(".dice-list img"));
 const diceButtons = Array.from(document.querySelectorAll(".dice-list button"));
@@ -19,7 +19,6 @@ diceButtons.forEach((button, index) => {
 scoreInputs.forEach((button, index) => {
     button.addEventListener("click", () => {
         const isHeld = holdScore(index);
-        heldScores[index] = isHeld;
         button.classList.toggle("held", isHeld);
 
         // Unholds all buttons
@@ -27,13 +26,8 @@ scoreInputs.forEach((button, index) => {
             diceButton.classList.toggle("held", heldDice[diceIndex]);
         });
 
-        // Roll the dice, so no cheating ;)
-        rollButton.click();
-
-        sum.textContent = calculateTotalSum(scoreInputs);
-        upperSum.value = calculateUpperSum(scoreInputs);
-        upperSum.classList.toggle("bonus-reached", Number(upperSum.value) >= 63);
-        bonus.textContent = calculateBonus(scoreInputs);
+        renderScoreArea(scoreValuesForDisplay());
+        renderScoreTotals();
     });
 })
 
@@ -67,6 +61,13 @@ function renderScoreArea(scores) {
     });
 }
 
+function renderScoreTotals() {
+    sum.textContent = calculateTotalSum();
+    upperSum.value = calculateUpperSum();
+    upperSum.classList.toggle("bonus-reached", Number(upperSum.value) >= 63);
+    bonus.textContent = calculateBonus();
+}
+
 
 
 
@@ -82,8 +83,7 @@ if (rollButton) {
         rollCounter.value = counter;
 
         // Indsætter alle værdier ind i Score area. Det ser lidt skørt ud.
-        renderScoreArea([upperSectionScore(1), upperSectionScore(2), upperSectionScore(3), upperSectionScore(4),
-            upperSectionScore(5), upperSectionScore(6), onePairScore(), twoPairScore(), threeOfAKindScore(),
-            fourOfAKindScore(), smallStraightScore(), largeStraightScore(), fullHouseScore(), chanceScore(), yatzyScore()]);
+        renderScoreArea(scoreValuesForDisplay());
+        renderScoreTotals();
     });
 }
