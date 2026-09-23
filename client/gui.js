@@ -28,6 +28,8 @@ scoreInputs.forEach((button, index) => {
 
         renderScoreArea(scoreValuesForDisplay());
         renderScoreTotals();
+
+        rollButton.click();
     });
 })
 
