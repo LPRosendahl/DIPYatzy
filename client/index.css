@@ -52,7 +52,8 @@ h2 {
 	display: contents;
 }
 
-.score-list input {
+.score-list input, output {
+	text-align: center;
 	width: 64px; /* Keeps every score field the same compact size. */
 	border: 1px solid #c9997f; /* Defines the field without overpowering the panel. */
 	border-radius: 4px;

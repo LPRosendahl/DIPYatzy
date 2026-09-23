@@ -21,6 +21,8 @@ scoreInputs.forEach((button, index) => {
         diceButtons.forEach((diceButton, diceIndex) => {
             diceButton.classList.toggle("held", heldDice[diceIndex]);
         });
+
+        calculateTotalSum();
     });
 })
 
@@ -53,6 +55,21 @@ function renderScoreArea(scores) {
         }
     });
 }
+
+let sum = document.getElementById("sum");
+
+function calculateTotalSum() {
+    let total = 0;
+
+    scoreInputs.forEach((input, index) => {
+        if (heldScores[index]) {
+            total += Number(input.value) || 0;
+        }
+    });
+
+    sum.value = total;
+}
+
 
 let rollCounter = 3;
 // Når man holder en score, starter counter forfra.
