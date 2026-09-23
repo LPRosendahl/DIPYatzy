@@ -62,11 +62,10 @@ export function upperSectionScore(eyes) {
 
 export function onePairScore() {
     const counts = countEyes();
-    let score;
     for (let index = 6; index >= 1; index--) {
-        if (counts[index] >=2) score = index * 2;
+        if (counts[index] >= 2) return index * 2;
     }
-    return score;
+    return 0;
 }
 
 export function twoPairScore() {
