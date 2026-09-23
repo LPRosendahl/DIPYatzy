@@ -2,7 +2,10 @@ export let dice = Array.from({length: 5}, function (_, i) {
     return i + 1;
 })
 
-let heldDice = [false, false, false, false, false];
+export let heldDice = [false, false, false, false, false];
+export let heldScores = Array.from({ length: 15}, function (_, i) {
+    return false;
+})
 
 // Ændrer kun de terninger som ikke er holdt 
 export function rollRandomDice() {
@@ -21,6 +24,16 @@ export function rollRandomDice() {
 export function holdDie(index) {
     heldDice[index] = !heldDice[index];
     return heldDice[index];
+}
+
+export function holdScore(index) {
+    heldScores[index] = !heldScores[index];
+    stopDiceHold();
+    return heldScores[index];
+}
+
+function stopDiceHold() {
+    heldDice = [false, false, false, false, false];
 }
 
 export function countEyes() {

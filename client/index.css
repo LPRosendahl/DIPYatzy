@@ -60,6 +60,10 @@ h2 {
 	font: inherit; /* Matches the field text to the rest of the interface. */
 }
 
+.score-list input.held {
+	background: lightgray;
+}
+
 .dice-list {
 	display: flex;
 	flex-direction: column;

@@ -1,4 +1,4 @@
-import { chanceScore, fourOfAKindScore, fullHouseScore, holdDie, largeStraightScore, onePairScore, rollRandomDice, smallStraightScore, threeOfAKindScore, twoPairScore, upperSectionScore, yatzyScore } from "../server/logik.js";
+import { chanceScore, fourOfAKindScore, fullHouseScore, holdDie, holdScore, heldDice, heldScores, largeStraightScore, onePairScore, rollRandomDice, smallStraightScore, threeOfAKindScore, twoPairScore, upperSectionScore, yatzyScore } from "../server/logik.js";
 
 const diceImages = Array.from(document.querySelectorAll(".dice-list img"));
 const diceButtons = Array.from(document.querySelectorAll(".dice-list button"));
@@ -11,6 +11,18 @@ diceButtons.forEach((button, index) => {
         button.classList.toggle("held", isHeld);
     });
 });
+
+scoreInputs.forEach((button, index) => {
+    button.addEventListener("click", () => {
+        const isHeld = holdScore(index);
+        heldScores[index] = isHeld;
+        button.classList.toggle("held", isHeld);
+
+        diceButtons.forEach((diceButton, diceIndex) => {
+            diceButton.classList.toggle("held", heldDice[diceIndex]);
+        });
+    });
+})
 
 const dieImageNames = [
     "one",
@@ -36,9 +48,15 @@ function renderScoreArea(scores) {
     if (!scores || scores.length === 0) return;
 
     scoreInputs.forEach((input, index) => {
-        input.value = scores[index] ?? 0;
+        if (!heldScores[index]) {
+            input.value = scores[index] ?? 0;
+        }
     });
 }
+
+let rollCounter = 3;
+// Når man holder en score, starter counter forfra.
+// Når man  trykker på en score for at holde den, "slipper" man alle terninger
 
 if (rollButton) {
     rollButton.addEventListener("click", () => {
