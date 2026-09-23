@@ -76,7 +76,7 @@ function calculateTotalSum() {
 }
 
 
-let rollCounter = 3;
+
 // Når man holder en score, starter counter forfra.
 // Når man  trykker på en score for at holde den, "slipper" man alle terninger
 
