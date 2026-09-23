@@ -1,3 +1,4 @@
+export let counter = 3;
 export let dice = Array.from({length: 5}, function (_, i) {
     return i + 1;
 })
@@ -9,6 +10,9 @@ export let heldScores = Array.from({ length: 15}, function (_, i) {
 
 // Ændrer kun de terninger som ikke er holdt 
 export function rollRandomDice() {
+    if (counter <= 0) {
+        return dice;
+    }
     dice = dice.map((value, index) => {
         // Terninger som allerede holdes returnerer den samme værdi
         if (heldDice[index]) {
@@ -17,7 +21,7 @@ export function rollRandomDice() {
         // Returnerer ny terning.
         return Math.floor(Math.random() * 6) + 1;
     });
-        
+    counter--;
     return dice;
 }
 // Skifter tilstand på die, så en terning som ikke holdes nu holdes.
@@ -29,6 +33,7 @@ export function holdDie(index) {
 export function holdScore(index) {
     heldScores[index] = !heldScores[index];
     stopDiceHold();
+    counter = 3; //.reset counter
     return heldScores[index];
 }
 
