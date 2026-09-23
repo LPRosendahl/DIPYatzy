@@ -28,6 +28,7 @@ export function upperSectionScore(eyes) {
 
 export function onePairScore() {
     const counts = countEyes();
+    let score;
     for (let index = 6; index >= 1; index--) {
         if (counts[index] >=2) score = index * 2;
     }
@@ -103,9 +104,16 @@ export function chanceScore() {
 }
 
 export function yatzyScore() {
-    let first = dice[0].valueOf;
-    dice.forEach(val => {
-        if (val != first) return 0;
-    })
-    return 50;
+    let counter = 0;
+    for (let index = 1; index < dice.length; index++) {
+        if (dice[index] === dice[0]) {
+            counter++;
+        }
+    }
+    // Hvis den første er ens med de 4 andre == YATSY!!!
+    if (counter === 4) {
+        return 50
+    } else {
+        return 0;
+    }
 }

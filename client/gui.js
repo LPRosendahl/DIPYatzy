@@ -1,4 +1,4 @@
-import { rollRandomDice } from "../server/logik.js";
+import { chanceScore, fourOfAKindScore, fullHouseScore, largeStraightScore, onePairScore, rollRandomDice, smallStraightScore, threeOfAKindScore, twoPairScore, upperSectionScore, yatzyScore } from "../server/logik.js";
 
 const diceImages = Array.from(document.querySelectorAll(".dice-list img"));
 const rollButton = document.getElementById("roll-button");
@@ -37,6 +37,8 @@ if (rollButton) {
         renderDice(diceValues);
 
         // Denne linje skal erstattes af jeres logik, når I har score-beregningen klar.
-        renderScoreArea([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        renderScoreArea([upperSectionScore(1), upperSectionScore(2), upperSectionScore(3), upperSectionScore(4),
+            upperSectionScore(5), upperSectionScore(6), onePairScore(), twoPairScore(), threeOfAKindScore(),
+            fourOfAKindScore(), smallStraightScore(), largeStraightScore(), fullHouseScore(), chanceScore(), yatzyScore()]);
     });
 }
