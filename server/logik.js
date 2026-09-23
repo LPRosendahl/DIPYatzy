@@ -76,7 +76,7 @@ export function threeOfAKindScore() {
 export function fourOfAKindScore() {
     const counts = countEyes();
     for (let index = 6; index >= 1; index--) {
-        if (counts[index] >= 4) return index * 0;
+        if (counts[index] >= 4) return index * 4;
         
     }
     return 0;
