@@ -52,6 +52,14 @@ h2 {
 	display: contents;
 }
 
+.score-list p.sum-row {
+	display: grid;
+	grid-column: 1 / -1;
+	grid-template-columns: minmax(130px, 1fr) 64px;
+	padding: 9px 0;
+	border-top: 1px solid #c9997f;
+}
+
 .score-list input, output {
 	text-align: center;
 	width: 64px; /* Keeps every score field the same compact size. */
@@ -92,6 +100,10 @@ h2 {
 	width: 40px;
     text-align: center;
 
+}
+
+#upperSum.bonus-reached {
+	color: green;
 }
 
 button {
