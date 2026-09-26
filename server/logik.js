@@ -75,9 +75,9 @@ export function scoreValuesForDisplay() {
     });
 }
 
-export function countEyes() {
+export function countEyes(diceToCount = dice) {
     const counts = [0, 0, 0, 0, 0, 0, 0];
-    for (const d of dice) {
+    for (const d of diceToCount) {
         counts[d]++;
     }
     return counts;
@@ -102,8 +102,8 @@ export function onePairScore() {
     return 0;
 }
 
-export function twoPairScore() {
-    const counts = countEyes();
+export function twoPairScore(diceToScore = dice) {
+    const counts = countEyes(diceToScore);
     let score = 0;
     let pairs = 0;
     for (let index = 6; index >= 1; index--) {
@@ -133,16 +133,16 @@ export function fourOfAKindScore() {
     return 0;
 }
 
-export function smallStraightScore() {
-    const counts = countEyes();
+export function smallStraightScore(diceToScore = dice) {
+    const counts = countEyes(diceToScore);
     for (let index = 1; index <=5; index++) {
         if (counts[index] != 1) return 0;
     }
     return 15;
 }
 
-export function largeStraightScore() {
-    const counts = countEyes();
+export function largeStraightScore(diceToScore = dice) {
+    const counts = countEyes(diceToScore);
     for (let index = 2; index <= 6; index++) {
         if (counts[index] != 1) return 0; 
     }

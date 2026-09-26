@@ -1,36 +1,39 @@
 
 import { assert } from "chai";
 import {
-    dice,
     twoPairScore,
     smallStraightScore,
     largeStraightScore
 } from "../server/logik.js";
 
 describe("dice-logik", () => {
-    it("indeholder fem terninger", () => {
-        assert.lengthOf(dice, 5);
-    });
+    describe("twoPairScore", () => {
+        it("giver 0 point, når der ikke er to par", () => {
+            assert.equal(twoPairScore([1,2,3,4,5]), 0);
+        });
 
-    it("indeholder terninger med værdier fra 1 til 6", () => {
-        dice.forEach(value => {
-            assert.isAtLeast(value, 1);
-            assert.isAtMost(value, 6);
+        it("Beregner korrekte point ved to par", () => {
+            assert.equal(twoPairScore([1,3,4,4,3]), 14);
         });
     });
 
-    it("giver 0 point for two pair, når der ikke er to par", () => {
-        assert.equal(twoPairScore(), 0);
+    describe("smallStraightScore", () => {
+        it("Giver 15 points for 1-2-3-4-5", () => {
+            assert.equal(smallStraightScore([1,2,3,4,5]), 15);
+        });
+    
+        it("Giver 0 points, hvis der ikke er small straight", () => {
+            assert.equal(smallStraightScore([1,3,2,6,5]), 0);
+        });
     });
 
-    it("giver 15 point for small straight", () => {
-        assert.equal(smallStraightScore(), 15);
-    });
+    describe("largeStraightScore", () => {
+        it("Giver 20 point for 2-3-4-5-6", () => {
+            assert.equal(largeStraightScore([2,3,4,5,6]), 20);
+        });
 
-    it("Giver 20 point for large straight", () => {
-        dice.splice(0, 5, 2, 3, 4, 5, 6)
-        assert.equal(largeStraightScore(), 20);
+        it("Giver 0 point hvis der ikke er large straight", () => {
+            assert.equal(largeStraightScore([2,3,4,4,1]), 0);
+        });
     });
-
-    it("")
 });
