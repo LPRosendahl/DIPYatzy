@@ -1,0 +1,30 @@
+doctype html
+html(lang="da")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Spil Lobby
+    link(rel="stylesheet", href="/MainMenu.css")
+  body
+    - const currentUser = userName || "Lucas"
+    - const scoreEntries = scores || ["Lucas: 312", "Nicklas: 324", "Christian : 228"]
+
+    .layout.lobby-layout
+      section.panel.lobby-left
+        .profile-header
+          .avatar-box
+            if avatarUrl
+              img(src=avatarUrl, alt=`Avatar for ${currentUser}`)
+            else
+              | 😄
+          .name-section
+            p.name-text Navn: #{currentUser}
+
+        a.new-game-btn(href=newGameUrl || "/game") New Game
+
+      section.panel.lobby-right
+        .score-title-box
+          h2 Scorelist:
+        .leaderboard-list
+          each entry in scoreEntries
+            .leaderboard-item= entry
