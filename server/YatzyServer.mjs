@@ -1,12 +1,16 @@
 import { holdDie, holdScore, heldDice, heldScores, rollRandomDice, counter, calculateTotalSum, calculateUpperSum, calculateBonus, scoreValuesForDisplay } from "./logik.js";
 import express from 'express';
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 const app = express();
 
-const port = 8080;
+const port = 6789;
+const clientDirectory = path.join(path.dirname(fileURLToPath(import.meta.url)), "../client");
 
 app.use(express.json());
+app.use(express.static(clientDirectory));
 
-// GET til at hente data 
+// GET til at hente data
 app.get("/yatzy/held-dice", (req, res) => {
     res.json(heldDice);
 });

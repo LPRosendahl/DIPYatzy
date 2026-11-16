@@ -9,7 +9,7 @@ export let heldScores = Array.from({ length: 15}, function (_, i) {
 })
 let scoreValues = Array.from({ length: 15 }, () => 0);
 
-// Ændrer kun de terninger som ikke er holdt 
+// Ændrer kun de terninger som ikke er holdt
 export function rollRandomDice() {
     if (counter <= 0) {
         return dice;
