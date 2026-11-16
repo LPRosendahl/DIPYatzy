@@ -8,6 +8,8 @@
     "mocha": "^11.4.0"
   },
   "dependencies": {
-    "express": "^5.3.0"
+    "express": "^5.3.0",
+    "express-session": "^1.19.0",
+    "pug": "^3.0.4"
   }
 }
