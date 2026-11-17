@@ -7,7 +7,19 @@ const app = express();
 const port = 6789;
 const clientDirectory = path.join(path.dirname(fileURLToPath(import.meta.url)), "../client");
 
+app.set("views", clientDirectory);
+app.set("view engine", "pug");
+
 app.use(express.json());
+
+app.get("/", (req, res) => {
+    res.render("MainMenu", {
+        userName: "Lucas",
+        scores: ["Lucas: 312", "Nicklas: 324", "Christian : 228"],
+        newGameUrl: "/index.html"
+    });
+});
+
 app.use(express.static(clientDirectory));
 
 // GET til at hente data
