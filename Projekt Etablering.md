@@ -18,8 +18,8 @@
 
 ## Trin 1 - Vis Pug-menuen
 
-- [ ] Lad Express bruge `MainMenu.pug` som visning.
-- [ ] Vis menuen på `/` i stedet for spillets `index.html`.
+- [x] Lad Express bruge `MainMenu.pug` som visning.
+- [x] Vis menuen på `/` i stedet for spillets `index.html`.
 - [ ] Fjern standardnavn og eksempelresultater fra menuen.
 - [ ] Kontrollér, at menuens CSS og side stadig indlæses korrekt.
 
