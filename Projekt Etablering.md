@@ -20,8 +20,8 @@
 
 - [x] Lad Express bruge `MainMenu.pug` som visning.
 - [x] Vis menuen på `/` i stedet for spillets `index.html`.
-- [ ] Fjern standardnavn og eksempelresultater fra menuen.
-- [ ] Kontrollér, at menuens CSS og side stadig indlæses korrekt.
+- [x] Fjern standardnavn og eksempelresultater fra menuen.
+- [x] Kontrollér, at menuens CSS og side stadig indlæses korrekt.
 
 **Hvorfor først:** Vi skal have den rigtige startside på plads, før menuens knapper kan føre videre til spillet.
 
