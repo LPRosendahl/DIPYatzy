@@ -37,6 +37,17 @@ export async function registerSingleplayer(username) {
     return result;
 }
 
+export async function registerMultiplayer(username) {
+    const respons = await fetch(`/multiplayer/${encodeURIComponent(username)}`, {
+        method: "POST"
+    });
+    const result = await respons.json();
+    if (respons.status !== 200) {
+        throw new Error(result.error || respons.status);
+    }
+    return result;
+}
+
 export function getHeldDice() {
     return get("/held-dice");
 }

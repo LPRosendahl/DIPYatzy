@@ -1,0 +1,19 @@
+doctype html
+html(lang="da")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Vælg spil
+    link(rel="stylesheet", href="/MainMenu.css")
+  body
+    main.layout.lobby-layout
+      section.panel.game-lobby
+        a.lobby-back(href="/") Tilbage til menu
+        h1 Multiplayer-lobby
+        p.welcome-text Velkommen, #{userName}. Vælg et spil:
+
+        article.game-choice-card
+          .game-choice-info
+            h2 Yatzy
+            p Spil Yatzy sammen med andre spillere.
+          a.new-game-btn(href="/multiplayer") Vælg Yatzy

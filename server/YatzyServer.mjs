@@ -81,6 +81,42 @@ app.get("/singleplayer", (req, res) => {
     res.sendFile(path.join(clientDirectory, "index.html"));
 });
 
+app.get("/lobby", (req, res) => {
+    const user = getUserFromSession(req);
+    if (!user) {
+        res.redirect("/");
+        return;
+    }
+    res.render("Lobby", { userName: user.username });
+});
+
+app.post("/multiplayer/:name", (req, res) => {
+    const username = req.params.name.trim();
+    if (!username || username.length > 30) {
+        return res.status(400).json({ error: "Brugernavnet skal være 1-30 tegn." });
+    }
+
+    const normalizedUsername = username.toLowerCase();
+    if (users.has(normalizedUsername)) {
+        return res.status(409).json({ error: "Dette brugernavn er allerede taget." });
+    }
+
+    const user = createUser(username);
+    users.set(normalizedUsername, user);
+    req.session.userId = user.id;
+    res.json({ id: user.id, username: user.username });
+});
+
+// TODO
+app.get("/multiplayer", (req, res) => {
+    if (!getUserFromSession(req)) {
+        res.redirect("/");
+        return;
+    }
+    res.sendFile(path.join(clientDirectory, "index.html"));
+    
+});
+
 app.get("/yatzy/leaderboard", (req, res) => {
     res.json(getFinishedGames());
 });

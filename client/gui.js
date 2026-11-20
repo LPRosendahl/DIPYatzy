@@ -8,6 +8,7 @@ import {
     getTotalSum,
     getUpperSum,
     registerSingleplayer,
+    registerMultiplayer,
     rollDice,
     selectScore,
     toggleDieHold
@@ -140,9 +141,17 @@ if (usernameForm) {
         event.preventDefault();
 
         const username = usernameInput.value.trim();
+        const mode = event.submitter instanceof HTMLButtonElement
+            ? event.submitter.value
+            : "singleplayer";
         try {
-            await registerSingleplayer(username);
-            window.location.assign("/singleplayer");
+            if (mode === "multiplayer") {
+                await registerMultiplayer(username);
+                window.location.assign("/lobby");
+            } else {
+                await registerSingleplayer(username);
+                window.location.assign("/singleplayer");
+            }
         } catch (error) {
             window.alert(error instanceof Error ? error.message : String(error));
         }

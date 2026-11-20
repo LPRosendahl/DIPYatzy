@@ -30,7 +30,8 @@ html(lang="da")
             required,
             maxlength="30"
           )
-          button.new-game-btn(type="submit") Singleplayer
+          button.new-game-btn(type="submit", name="mode", value="singleplayer") Singleplayer
+          button.new-game-btn(type="submit", name="mode", value="multiplayer") Multiplayer
 
       section.panel.lobby-right
         .score-title-box
