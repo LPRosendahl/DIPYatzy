@@ -5,9 +5,10 @@ html(lang="da")
     meta(name="viewport", content="width=device-width, initial-scale=1.0")
     title Spil Lobby
     link(rel="stylesheet", href="/MainMenu.css")
+    script(type="module", src="/gui.js", defer)
   body
     - const currentUser = userName || ""
-    - const scoreEntries = scores || [""]
+    - const scoreEntries = scores || []
 
     .layout.lobby-layout
       section.panel.lobby-left
@@ -20,11 +21,22 @@ html(lang="da")
           .name-section
             p.name-text Navn: #{currentUser}
 
-        a.new-game-btn(href=newGameUrl || "/index.html") New Game
+        form#username-form
+          label(for="username") Brugernavn:
+          input#username(
+            type="text",
+            name="username",
+            value=currentUser,
+            required,
+            maxlength="30"
+          )
+          button.new-game-btn(type="submit") Singleplayer
 
       section.panel.lobby-right
         .score-title-box
           h2 Scorelist:
-        .leaderboard-list
+        .leaderboard-list#leaderboard-list
           each entry in scoreEntries
-            .leaderboard-item= entry
+            .leaderboard-item #{entry.username} - #{entry.score}
+          else
+            .leaderboard-item Ingen afsluttede spil endnu

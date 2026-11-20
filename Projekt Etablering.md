@@ -27,7 +27,7 @@
 
 ## Trin 2 - Lav valg mellem singleplayer og multiplayer
 
-- [ ] Tilføj et navnefelt og en knap til at starte singleplayer.
+- [x] Tilføj et navnefelt og en knap til at starte singleplayer.
 - [ ] Tilføj en knap til at tilmelde sig multiplayer-lobbyen.
 - [ ] Vis tilmeldte multiplayer-spillere i menuen.
 - [ ] Tilføj en startknap, som først kan bruges, når mindst to spillere er tilmeldt.
@@ -47,8 +47,8 @@
 
 ## Trin 4 - Vis og opdatér scoreboardet
 
-- [ ] Vis spillernes aktuelle totalscore i menuens scoreboard.
-- [ ] Vis det samme scoreboard til højre på spilsiden.
+- [x] Vis spillernes aktuelle totalscore i menuens scoreboard.
+- [ ] Vis multiplayer scoreboard til højre på spilsiden.
 - [ ] Opdatér scoreboardet efter hvert scorevalg.
 - [ ] Vis hvis det er spillerens tur, eller hvem der skal spille.
 - [ ] Deaktivér spilhandlinger, når det ikke er spillerens tur.
@@ -57,16 +57,16 @@
 
 ## Trin 5 - Test hele spilforløbet
 
-- [ ] Test singleplayer fra menu til afsluttet scorekort.
+- [x] Test singleplayer fra menu til afsluttet scorekort.
 - [ ] Test multiplayer med mindst to separate browser-sessioner.
 - [ ] Kontrollér, at spillerne får ture i tilmeldingsrækkefølge.
 - [ ] Kontrollér, at scoreboardet ændres efter hvert scorevalg.
 - [ ] Test serveren på localhost.
-- [ ] Test tilslutning fra en anden enhed på samme netværk via serverens IP-adresse.
+- [x] Test tilslutning fra en anden enhed på samme netværk via serverens IP-adresse.
 
 **Hvorfor til sidst:** Når sider, sessioner og API-kald er samlet, kan hele forløbet testes på samme måde, som det skal bruges.
 
 ## Mulige udvidelser
 
 - [ ] Gem spillere og spiltilstand, så de overlever en servergenstart.
-- [ ] Vis statistik som highscore eller gennemsnitlig score.
+- [x] Vis statistik som highscore.

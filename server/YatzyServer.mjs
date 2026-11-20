@@ -1,82 +1,172 @@
-import { holdDie, holdScore, heldDice, heldScores, rollRandomDice, counter, calculateTotalSum, calculateUpperSum, calculateBonus, scoreValuesForDisplay } from "./logik.js";
-import express from 'express';
+import { randomBytes } from "node:crypto";
+import express from "express";
+import session from "express-session";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-const app = express();
+import { createUser } from "./logik.js";
 
-const port = 6789;
+const app = express();
+const port = 9123;
 const clientDirectory = path.join(path.dirname(fileURLToPath(import.meta.url)), "../client");
+const users = new Map();
 
 app.set("views", clientDirectory);
 app.set("view engine", "pug");
 
 app.use(express.json());
+app.use(session({
+    secret: randomBytes(32).toString("hex"),
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        sameSite: "lax"
+    }
+}));
+
+function getUserFromSession(req) {
+    if (!req.session.userId) return null;
+    return users.get(req.session.userId.toLowerCase()) ?? null;
+}
+
+function getUserForRequest(req, res) {
+    const user = getUserFromSession(req);
+    if (!user) {
+        res.status(401).json({ error: "Start et singleplayer-spil først." });
+        return null;
+    }
+    return user;
+}
+
+function getFinishedGames() {
+    return Array.from(users.values())
+        .filter(user => user.game.isFinished())
+        .map(user => ({
+            username: user.username,
+            score: user.game.calculateTotalSum()
+        }))
+        .sort((first, second) => second.score - first.score);
+}
 
 app.get("/", (req, res) => {
+    const user = getUserFromSession(req);
     res.render("MainMenu", {
-        userName: "",
-        scores: [""],
-        newGameUrl: "/index.html"
+        userName: user?.username ?? "",
+        scores: getFinishedGames()
     });
 });
 
-app.use(express.static(clientDirectory));
+app.post("/singleplayer/:name", (req, res) => {
+    const username = req.params.name.trim();
+    if (!username || username.length > 30) {
+        return res.status(400).json({ error: "Brugernavnet skal være 1-30 tegn." });
+    }
 
-// GET til at hente data
+    const normalizedUsername = username.toLowerCase();
+    if (users.has(normalizedUsername)) {
+        return res.status(409).json({ error: "Dette brugernavn er allerede taget." });
+    }
+
+    const user = createUser(username);
+    users.set(normalizedUsername, user);
+    req.session.userId = user.id;
+    res.json({ id: user.id, username: user.username });
+});
+
+app.get("/singleplayer", (req, res) => {
+    if (!getUserFromSession(req)) {
+        res.redirect("/");
+        return;
+    }
+    res.sendFile(path.join(clientDirectory, "index.html"));
+});
+
+app.get("/yatzy/leaderboard", (req, res) => {
+    res.json(getFinishedGames());
+});
+
 app.get("/yatzy/held-dice", (req, res) => {
-    res.json(heldDice);
+    const user = getUserForRequest(req, res);
+    if (!user) return;
+    res.json(user.game.getHeldDice());
 });
 
 app.get("/yatzy/held-scores", (req, res) => {
-    res.json(heldScores);
+    const user = getUserForRequest(req, res);
+    if (!user) return;
+    res.json(user.game.getHeldScores());
 });
 
 app.get("/yatzy/dice/counter", (req, res) => {
-    res.json(counter);
+    const user = getUserForRequest(req, res);
+    if (!user) return;
+    res.json(user.game.getCounter());
 });
 
 app.get("/yatzy/dice/calculateTotalSum", (req, res) => {
-    res.json(calculateTotalSum());
+    const user = getUserForRequest(req, res);
+    if (!user) return;
+    res.json(user.game.calculateTotalSum());
 });
 
 app.get("/yatzy/dice/calculateUpperSum", (req, res) => {
-    res.json(calculateUpperSum());
+    const user = getUserForRequest(req, res);
+    if (!user) return;
+    res.json(user.game.calculateUpperSum());
 });
 
 app.get("/yatzy/dice/calculateBonus", (req, res) => {
-    res.json(calculateBonus());
+    const user = getUserForRequest(req, res);
+    if (!user) return;
+    res.json(user.game.calculateBonus());
 });
 
 app.get("/yatzy/dice/scoreValuesForDisplay", (req, res) => {
-    res.json(scoreValuesForDisplay());
+    const user = getUserForRequest(req, res);
+    if (!user) return;
+    res.json(user.game.scoreValuesForDisplay());
 });
 
-
-// POST til handlinger, der ændrer spillet
-
 app.post("/yatzy/hold-die", (req, res) => {
-
     const index = req.body.index;
     if (!Number.isInteger(index) || index < 0 || index > 4) {
-        return res.status(400).json({error: "Ugyldigt terningindeks" });
+        return res.status(400).json({ error: "Ugyldigt terningindeks" });
     }
-    const result = holdDie(index);
-    res.json(result);
+
+    const user = getUserForRequest(req, res);
+    if (!user) return;
+    res.json(user.game.holdDie(index));
 });
 
 app.post("/yatzy/hold-score", (req, res) => {
     const index = req.body.index;
     if (!Number.isInteger(index) || index < 0 || index > 14) {
-        return res.status(400).json({error: "Ugyldigt scoreindeks" });
+        return res.status(400).json({ error: "Ugyldigt scoreindeks" });
     }
-    const result = holdScore(index);
-    res.json(result);
+
+    const user = getUserForRequest(req, res);
+    if (!user) return;
+    if (user.game.getHeldScores()[index]) {
+        return res.status(409).json({ error: "Scorekategorien er allerede valgt." });
+    }
+    if (user.game.isFinished()) {
+        return res.status(409).json({ error: "Spillet er allerede færdigt." });
+    }
+
+    res.json(user.game.holdScore(index));
 });
 
 app.post("/yatzy/roll-random-dice", (req, res) => {
-    res.json(rollRandomDice());
+    const user = getUserForRequest(req, res);
+    if (!user) return;
+    if (user.game.isFinished()) {
+        return res.status(409).json({ error: "Spillet er færdigt." });
+    }
+    res.json(user.game.rollRandomDice());
 });
 
+app.use(express.static(clientDirectory, { index: false }));
 
-app.listen(port);
-console.log("Serveren kører på " + port);  
+app.listen(port, () => {
+    console.log("Serveren kører på " + port);
+});

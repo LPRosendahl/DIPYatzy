@@ -1,6 +1,8 @@
 
 import { assert } from "chai";
 import {
+    createGame,
+    createUser,
     twoPairScore,
     smallStraightScore,
     largeStraightScore
@@ -14,6 +16,41 @@ describe("dice-logik", () => {
 
         it("Beregner korrekte point ved to par", () => {
             assert.equal(twoPairScore([1,3,4,4,3]), 14);
+        });
+    });
+
+    describe("createGame", () => {
+        it("holder terninger og kastetæller adskilt mellem spil", () => {
+            const firstGame = createGame();
+            const secondGame = createGame();
+
+            firstGame.holdDie(0);
+            firstGame.rollRandomDice();
+
+            assert.equal(firstGame.getHeldDice()[0], true);
+            assert.equal(secondGame.getHeldDice()[0], false);
+            assert.equal(firstGame.getCounter(), 2);
+            assert.equal(secondGame.getCounter(), 3);
+        });
+
+        it("holder scorekort og totalscore adskilt mellem spil", () => {
+            const firstGame = createGame();
+            const secondGame = createGame();
+
+            firstGame.holdScore(0);
+
+            assert.equal(firstGame.getHeldScores()[0], true);
+            assert.equal(secondGame.getHeldScores()[0], false);
+            assert.equal(firstGame.calculateTotalSum(), 1);
+            assert.equal(secondGame.calculateTotalSum(), 0);
+        });
+
+        it("opretter brugeren med username som id", () => {
+            const user = createUser("Lucas");
+
+            assert.equal(user.id, "Lucas");
+            assert.equal(user.username, "Lucas");
+            assert.equal(user.game.getCounter(), 3);
         });
     });
 

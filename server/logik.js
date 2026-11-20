@@ -1,109 +1,31 @@
-export let counter = 3;
-export let dice = Array.from({length: 5}, function (_, i) {
-    return i + 1;
-})
-
-export let heldDice = [false, false, false, false, false];
-export let heldScores = Array.from({ length: 15}, function (_, i) {
-    return false;
-})
-let scoreValues = Array.from({ length: 15 }, () => 0);
-
-// Ændrer kun de terninger som ikke er holdt
-export function rollRandomDice() {
-    if (counter <= 0) {
-        return dice;
-    }
-    dice = dice.map((value, index) => {
-        // Terninger som allerede holdes returnerer den samme værdi
-        if (heldDice[index]) {
-            return value;
-        }
-        // Returnerer ny terning.
-        return Math.floor(Math.random() * 6) + 1;
-    });
-    counter--;
-    return dice;
-}
-// Skifter tilstand på die, så en terning som ikke holdes nu holdes.
-export function holdDie(index) {
-    heldDice[index] = !heldDice[index];
-    return heldDice[index];
-}
-
-export function holdScore(index) {
-    if (heldScores[index]) {
-        return true;
-    }
-
-    scoreValues[index] = scoreForCategory(index);
-    heldScores[index] = true;
-    stopDiceHold();
-    counter = 3; //.reset counter
-    return true;
-}
-
-function stopDiceHold() {
-    heldDice = [false, false, false, false, false];
-}
-
-function scoreForCategory(index) {
-    const scores = [
-        upperSectionScore(1),
-        upperSectionScore(2),
-        upperSectionScore(3),
-        upperSectionScore(4),
-        upperSectionScore(5),
-        upperSectionScore(6),
-        onePairScore(),
-        twoPairScore(),
-        threeOfAKindScore(),
-        fourOfAKindScore(),
-        smallStraightScore(),
-        largeStraightScore(),
-        fullHouseScore(),
-        chanceScore(),
-        yatzyScore()
-    ];
-
-    return scores[index] ?? 0;
-}
-
-export function scoreValuesForDisplay() {
-    return Array.from({ length: 15 }, (_, index) => {
-        return heldScores[index] ? scoreValues[index] : scoreForCategory(index);
-    });
-}
-
-export function countEyes(diceToCount = dice) {
+function countEyesInDice(diceToCount) {
     const counts = [0, 0, 0, 0, 0, 0, 0];
-    for (const d of diceToCount) {
-        counts[d]++;
+    for (const die of diceToCount) {
+        counts[die]++;
     }
     return counts;
 }
 
-// Summen af alle terningerne i dice.
-export function upperSectionScore(eyes) {
+function upperSectionScoreFor(diceToScore, eyes) {
     let sum = 0;
-    dice.forEach(val => {
-        if (val === eyes) {
-            sum += val;
+    diceToScore.forEach(value => {
+        if (value === eyes) {
+            sum += value;
         }
-    })
+    });
     return sum;
 }
 
-export function onePairScore() {
-    const counts = countEyes();
+function onePairScoreFor(diceToScore) {
+    const counts = countEyesInDice(diceToScore);
     for (let index = 6; index >= 1; index--) {
         if (counts[index] >= 2) return index * 2;
     }
     return 0;
 }
 
-export function twoPairScore(diceToScore = dice) {
-    const counts = countEyes(diceToScore);
+function twoPairScoreFor(diceToScore) {
+    const counts = countEyesInDice(diceToScore);
     let score = 0;
     let pairs = 0;
     for (let index = 6; index >= 1; index--) {
@@ -111,50 +33,50 @@ export function twoPairScore(diceToScore = dice) {
             pairs++;
             score += index * 2;
             if (pairs === 2) return score;
-        }        
+        }
     }
     return 0;
 }
 
-export function threeOfAKindScore() {
-    const counts = countEyes();
+function threeOfAKindScoreFor(diceToScore) {
+    const counts = countEyesInDice(diceToScore);
     for (let index = 6; index >= 1; index--) {
         if (counts[index] >= 3) return index * 3;
     }
     return 0;
 }
 
-export function fourOfAKindScore() {
-    const counts = countEyes();
+function fourOfAKindScoreFor(diceToScore) {
+    const counts = countEyesInDice(diceToScore);
     for (let index = 6; index >= 1; index--) {
         if (counts[index] >= 4) return index * 4;
-        
     }
     return 0;
 }
 
-export function smallStraightScore(diceToScore = dice) {
-    const counts = countEyes(diceToScore);
-    for (let index = 1; index <=5; index++) {
-        if (counts[index] != 1) return 0;
+function smallStraightScoreFor(diceToScore) {
+    const counts = countEyesInDice(diceToScore);
+    for (let index = 1; index <= 5; index++) {
+        if (counts[index] !== 1) return 0;
     }
     return 15;
 }
 
-export function largeStraightScore(diceToScore = dice) {
-    const counts = countEyes(diceToScore);
+function largeStraightScoreFor(diceToScore) {
+    const counts = countEyesInDice(diceToScore);
     for (let index = 2; index <= 6; index++) {
-        if (counts[index] != 1) return 0; 
+        if (counts[index] !== 1) return 0;
     }
     return 20;
 }
 
-export function fullHouseScore() {
-    const counts = countEyes();
-    let three = 0, two = 0;
+function fullHouseScoreFor(diceToScore) {
+    const counts = countEyesInDice(diceToScore);
+    let three = 0;
+    let two = 0;
     for (let index = 1; index <= 6; index++) {
         if (counts[index] === 3) three = index * 3;
-        if (counts[index] === 2) two = index * 2;        
+        if (counts[index] === 2) two = index * 2;
     }
     if (three > 0 && two > 0) {
         return three + two;
@@ -162,60 +84,220 @@ export function fullHouseScore() {
     return 0;
 }
 
-export function chanceScore() {
-    let sum = 0;
-    dice.forEach(val => {
-        sum += val;
-    })
-    return sum;
+function chanceScoreFor(diceToScore) {
+    return diceToScore.reduce((sum, value) => sum + value, 0);
 }
 
-export function yatzyScore() {
-    let counter = 0;
-    for (let index = 1; index < dice.length; index++) {
-        if (dice[index] === dice[0]) {
-            counter++;
+function yatzyScoreFor(diceToScore) {
+    return diceToScore.every(value => value === diceToScore[0]) ? 50 : 0;
+}
+
+function scoreForCategory(index, diceToScore) {
+    const scores = [
+        upperSectionScoreFor(diceToScore, 1),
+        upperSectionScoreFor(diceToScore, 2),
+        upperSectionScoreFor(diceToScore, 3),
+        upperSectionScoreFor(diceToScore, 4),
+        upperSectionScoreFor(diceToScore, 5),
+        upperSectionScoreFor(diceToScore, 6),
+        onePairScoreFor(diceToScore),
+        twoPairScoreFor(diceToScore),
+        threeOfAKindScoreFor(diceToScore),
+        fourOfAKindScoreFor(diceToScore),
+        smallStraightScoreFor(diceToScore),
+        largeStraightScoreFor(diceToScore),
+        fullHouseScoreFor(diceToScore),
+        chanceScoreFor(diceToScore),
+        yatzyScoreFor(diceToScore)
+    ];
+
+    return scores[index] ?? 0;
+}
+
+export function createGame() {
+    let counter = 3;
+    let dice = Array.from({ length: 5 }, (_, index) => index + 1);
+    let heldDice = [false, false, false, false, false];
+    let heldScores = Array.from({ length: 15 }, () => false);
+    const scoreValues = Array.from({ length: 15 }, () => 0);
+
+    function rollRandomDice() {
+        if (counter > 0) {
+            dice = dice.map((value, index) => {
+                if (heldDice[index]) {
+                    return value;
+                }
+                return Math.floor(Math.random() * 6) + 1;
+            });
+            counter--;
         }
+        return dice.slice();
     }
-    // Hvis den første er ens med de 4 andre == YATSY!!!
-    if (counter === 4) {
-        return 50
-    } else {
-        return 0;
+
+    function holdDie(index) {
+        heldDice[index] = !heldDice[index];
+        return heldDice[index];
     }
+
+    function holdScore(index) {
+        if (heldScores[index]) {
+            return true;
+        }
+
+        scoreValues[index] = scoreForCategory(index, dice);
+        heldScores[index] = true;
+        heldDice = [false, false, false, false, false];
+        counter = 3;
+        return true;
+    }
+
+    function scoreValuesForDisplay() {
+        return Array.from({ length: 15 }, (_, index) => {
+            return heldScores[index] ? scoreValues[index] : scoreForCategory(index, dice);
+        });
+    }
+
+    function calculateUpperSum() {
+        let total = 0;
+        heldScores.forEach((isHeld, index) => {
+            if (isHeld && index < 6) {
+                total += scoreValues[index];
+            }
+        });
+        return total;
+    }
+
+    function calculateBonus() {
+        return calculateUpperSum() >= 63 ? 50 : 0;
+    }
+
+    function calculateTotalSum() {
+        let total = calculateBonus();
+        heldScores.forEach((isHeld, index) => {
+            if (isHeld) {
+                total += scoreValues[index];
+            }
+        });
+        return total;
+    }
+
+    return {
+        rollRandomDice,
+        holdDie,
+        holdScore,
+        scoreValuesForDisplay,
+        calculateTotalSum,
+        calculateUpperSum,
+        calculateBonus,
+        getCounter: () => counter,
+        getDice: () => dice.slice(),
+        getHeldDice: () => heldDice.slice(),
+        getHeldScores: () => heldScores.slice(),
+        isFinished: () => heldScores.every(Boolean)
+    };
+}
+
+export function createUser(username) {
+    return {
+        id: username,
+        username,
+        game: createGame()
+    };
+}
+
+
+//===========================================================
+//                      TEST FUNKTIONER
+//===========================================================
+
+const defaultGame = createGame();
+
+export let counter = defaultGame.getCounter();
+export let dice = defaultGame.getDice();
+export let heldDice = defaultGame.getHeldDice();
+export let heldScores = defaultGame.getHeldScores();
+
+function updateDefaultGameValues() {
+    counter = defaultGame.getCounter();
+    dice = defaultGame.getDice();
+    heldDice = defaultGame.getHeldDice();
+    heldScores = defaultGame.getHeldScores();
+}
+
+export function rollRandomDice() {
+    const result = defaultGame.rollRandomDice();
+    updateDefaultGameValues();
+    return result;
+}
+
+export function holdDie(index) {
+    const result = defaultGame.holdDie(index);
+    updateDefaultGameValues();
+    return result;
+}
+
+export function holdScore(index) {
+    const result = defaultGame.holdScore(index);
+    updateDefaultGameValues();
+    return result;
+}
+
+export function scoreValuesForDisplay() {
+    return defaultGame.scoreValuesForDisplay();
 }
 
 export function calculateTotalSum() {
-    let total = 0;
-
-    if (calculateUpperSum() >= 63) {
-        total += 50;
-    }
-
-    heldScores.forEach((isHeld, index) => {
-        if (isHeld) {
-            total += scoreValues[index];
-        }
-    });
-
-    return total;
+    return defaultGame.calculateTotalSum();
 }
 
 export function calculateUpperSum() {
-    let total = 0;
-
-    heldScores.forEach((isHeld, index) => {
-        if (isHeld && index < 6) {
-            total += scoreValues[index];
-        }
-    });
-    return total;
+    return defaultGame.calculateUpperSum();
 }
 
 export function calculateBonus() {
-    if (calculateUpperSum() >= 63) {
-        return 50;
-    }
+    return defaultGame.calculateBonus();
+}
 
-    return 0;
+export function countEyes(diceToCount = defaultGame.getDice()) {
+    return countEyesInDice(diceToCount);
+}
+
+export function upperSectionScore(eyes, diceToScore = defaultGame.getDice()) {
+    return upperSectionScoreFor(diceToScore, eyes);
+}
+
+export function onePairScore(diceToScore = defaultGame.getDice()) {
+    return onePairScoreFor(diceToScore);
+}
+
+export function twoPairScore(diceToScore = defaultGame.getDice()) {
+    return twoPairScoreFor(diceToScore);
+}
+
+export function threeOfAKindScore(diceToScore = defaultGame.getDice()) {
+    return threeOfAKindScoreFor(diceToScore);
+}
+
+export function fourOfAKindScore(diceToScore = defaultGame.getDice()) {
+    return fourOfAKindScoreFor(diceToScore);
+}
+
+export function smallStraightScore(diceToScore = defaultGame.getDice()) {
+    return smallStraightScoreFor(diceToScore);
+}
+
+export function largeStraightScore(diceToScore = defaultGame.getDice()) {
+    return largeStraightScoreFor(diceToScore);
+}
+
+export function fullHouseScore(diceToScore = defaultGame.getDice()) {
+    return fullHouseScoreFor(diceToScore);
+}
+
+export function chanceScore(diceToScore = defaultGame.getDice()) {
+    return chanceScoreFor(diceToScore);
+}
+
+export function yatzyScore(diceToScore = defaultGame.getDice()) {
+    return yatzyScoreFor(diceToScore);
 }

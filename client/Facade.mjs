@@ -26,6 +26,17 @@ async function post(path, data = {}) {
     return await respons.json();
 }
 
+export async function registerSingleplayer(username) {
+    const respons = await fetch(`/singleplayer/${encodeURIComponent(username)}`, {
+        method: "POST"
+    });
+    const result = await respons.json();
+    if (respons.status !== 200) {
+        throw new Error(result.error || respons.status);
+    }
+    return result;
+}
+
 export function getHeldDice() {
     return get("/held-dice");
 }
@@ -52,6 +63,10 @@ export function getBonus() {
 
 export function getScoreValues() {
     return get("/dice/scoreValuesForDisplay");
+}
+
+export function getLeaderboard() {
+    return get("/leaderboard");
 }
 
 export function rollDice() {

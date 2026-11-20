@@ -2,10 +2,12 @@ import {
     getBonus,
     getHeldDice,
     getHeldScores,
+    getLeaderboard,
     getRollCounter,
     getScoreValues,
     getTotalSum,
     getUpperSum,
+    registerSingleplayer,
     rollDice,
     selectScore,
     toggleDieHold
@@ -19,6 +21,11 @@ const rollCounter = document.getElementById("rollCounter");
 const sum = document.getElementById("sum");
 const upperSum = document.getElementById("upperSum");
 const bonus = document.getElementById("bonus");
+const usernameForm = document.getElementById("username-form");
+const usernameInput = document.getElementById("username");
+const leaderboardList = document.getElementById("leaderboard-list");
+const gameStatus = document.getElementById("game-status");
+let gameFinished = false;
 
 const dieImageNames = [
     "one",
@@ -61,6 +68,7 @@ function renderScoreArea(scores, heldScores) {
             input.value = scores[index] ?? 0;
         }
         input.classList.toggle("held", Boolean(heldScores[index]));
+        input.disabled = gameFinished || Boolean(heldScores[index]);
     });
 }
 
@@ -74,6 +82,38 @@ function renderScoreTotals(total, upper, bonusValue) {
 function renderRollCounter(counter) {
     rollCounter.value = counter;
 }
+// Tjekker om spillet er færdigt før den disabler rollButton
+
+function renderGameStatus(heldScores) {
+    gameFinished = heldScores.every(Boolean);
+    if (gameStatus && gameFinished) {
+        gameStatus.textContent = "Spillet er færdigt. Din score vises på forsiden.";
+    }
+    if (rollButton) {
+        rollButton.disabled = gameFinished;
+    }
+}
+
+// Vores leaderboar :)
+function renderLeaderboard(entries) {
+    if (!leaderboardList) return;
+
+    leaderboardList.replaceChildren();
+    if (entries.length === 0) {
+        const entry = document.createElement("div");
+        entry.className = "leaderboard-item";
+        entry.textContent = "Ingen afsluttede spil endnu";
+        leaderboardList.append(entry);
+        return;
+    }
+
+    entries.forEach((entry, index) => {
+        const row = document.createElement("div");
+        row.className = "leaderboard-item";
+        row.textContent = `${index + 1}. ${entry.username} - ${entry.score}`;
+        leaderboardList.append(row);
+    });
+}
 
 async function updateScoreTotals() {
     const total = await getTotalSum();
@@ -82,9 +122,31 @@ async function updateScoreTotals() {
     renderScoreTotals(total, upper, bonusValue);
 }
 
+async function updateLeaderboard() {
+    try {
+        renderLeaderboard(await getLeaderboard());
+    } catch (error) {
+        console.error("Could not update leaderboard:", error);
+    }
+}
+
 function showRequestError(error) { // Kræs
     console.error("Game request failed:", error);
     window.alert(error instanceof Error ? error.message : String(error));
+}
+
+if (usernameForm) {
+    usernameForm.addEventListener("submit", async event => {
+        event.preventDefault();
+
+        const username = usernameInput.value.trim();
+        try {
+            await registerSingleplayer(username);
+            window.location.assign("/singleplayer");
+        } catch (error) {
+            window.alert(error instanceof Error ? error.message : String(error));
+        }
+    });
 }
 
 diceButtons.forEach((button, index) => {
@@ -101,13 +163,18 @@ diceButtons.forEach((button, index) => {
 scoreInputs.forEach((input, index) => {
     input.addEventListener("click", async () => {
         try {
-            const isHeld = await selectScore(index);
-            input.classList.toggle("held", isHeld);
-
+            await selectScore(index);
             renderHeldDice(await getHeldDice());
+            const heldScores = await getHeldScores();
+            renderScoreArea(await getScoreValues(), heldScores);
             await updateScoreTotals();
 
-            rollButton.click();
+            renderGameStatus(heldScores);
+            if (!gameFinished) {
+                rollButton.click();
+            } else {
+                await updateLeaderboard();
+            }
         } catch (error) {
             showRequestError(error);
         }
@@ -121,7 +188,9 @@ if (rollButton) {
             renderDice(diceValues);
 
             renderRollCounter(await getRollCounter());
-            renderScoreArea(await getScoreValues(), await getHeldScores());
+            const heldScores = await getHeldScores();
+            renderScoreArea(await getScoreValues(), heldScores);
+            renderGameStatus(heldScores);
         } catch (error) {
             showRequestError(error);
         }
@@ -131,13 +200,27 @@ if (rollButton) {
 async function loadInitialFields() {
     try {
         renderHeldDice(await getHeldDice());
-        renderScoreArea(await getScoreValues(), await getHeldScores());
+        const heldScores = await getHeldScores();
+        renderScoreArea(await getScoreValues(), heldScores);
         renderRollCounter(await getRollCounter());
         await updateScoreTotals();
+        renderGameStatus(heldScores);
     } catch (error) {
         showRequestError(error);
     }
 }
 
-renderDice();
-loadInitialFields();
+if (rollButton) { // Loader kun på spil siden
+    try {
+        const diceValues = await rollDice();
+        renderDice(diceValues);
+        loadInitialFields();
+    } catch (error) {
+            showRequestError(error);
+    }
+}
+
+if (leaderboardList) { // Loader kun på forsiden
+    updateLeaderboard();
+    window.setInterval(updateLeaderboard, 3000);
+}

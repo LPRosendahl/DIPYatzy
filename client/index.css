@@ -25,6 +25,7 @@ body {
 
 .right-column {
 	flex: 0 1 240px;
+	flex-direction: column;
 }
 
 .panel {
@@ -82,6 +83,10 @@ h2 {
 
 .score-list input.held {
 	background: lightgray;
+}
+
+#game-status {
+	font-weight: bold;
 }
 
 .dice-list {
