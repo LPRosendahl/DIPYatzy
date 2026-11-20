@@ -14,8 +14,8 @@ app.use(express.json());
 
 app.get("/", (req, res) => {
     res.render("MainMenu", {
-        userName: "Lucas",
-        scores: ["Lucas: 312", "Nicklas: 324", "Christian : 228"],
+        userName: "",
+        scores: [""],
         newGameUrl: "/index.html"
     });
 });
