@@ -114,6 +114,10 @@ function scoreForCategory(index, diceToScore) {
     return scores[index] ?? 0;
 }
 
+//===========================================================
+//                      SINGLEPLAYER
+//===========================================================
+
 export function createGame() {
     let counter = 3;
     let dice = Array.from({ length: 5 }, (_, index) => index + 1);
@@ -204,6 +208,10 @@ export function createUser(username) {
         game: createGame()
     };
 }
+
+//===========================================================
+//                      MULTIPLAYER
+//===========================================================
 
 export function createMultiplayerGame(players) {
     if (!Array.isArray(players) || players.length < 2) {
