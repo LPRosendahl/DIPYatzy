@@ -205,6 +205,114 @@ export function createUser(username) {
     };
 }
 
+export function createMultiplayerGame(players) {
+    if (!Array.isArray(players) || players.length < 2) {
+        throw new Error("Et multiplayer-spil kræver mindst to spillere.");
+    }
+
+    let currentPlayerIndex = 0;
+
+    function getCurrentPlayer() {
+        return players[currentPlayerIndex];
+    }
+
+    function getCurrentPlayerForAction(playerId) {
+        if (isFinished()) {
+            throw new Error("Multiplayer-spillet er færdigt.");
+        }
+
+        const currentPlayer = getCurrentPlayer();
+        if (currentPlayer.id !== playerId) {
+            throw new Error("Det er ikke spillerens tur.");
+        }
+
+        return currentPlayer;
+    }
+
+    function advanceTurn() {
+        if (isFinished()) return;
+
+        for (let offset = 1; offset <= players.length; offset++) {
+            const nextIndex = (currentPlayerIndex + offset) % players.length;
+            if (!players[nextIndex].game.isFinished()) {
+                currentPlayerIndex = nextIndex;
+                return;
+            }
+        }
+    }
+
+    function rollRandomDice(playerId) {
+        return getCurrentPlayerForAction(playerId).game.rollRandomDice();
+    }
+
+    function holdDie(playerId, index) {
+        if (!Number.isInteger(index) || index < 0 || index > 4) {
+            throw new RangeError("Ugyldigt terningindeks.");
+        }
+
+        return getCurrentPlayerForAction(playerId).game.holdDie(index);
+    }
+
+    function holdScore(playerId, index) {
+        if (!Number.isInteger(index) || index < 0 || index > 14) {
+            throw new RangeError("Ugyldigt scoreindeks.");
+        }
+
+        const currentPlayer = getCurrentPlayerForAction(playerId);
+        if (currentPlayer.game.getHeldScores()[index]) {
+            throw new Error("Scorekategorien er allerede valgt.");
+        }
+
+        const result = currentPlayer.game.holdScore(index);
+        advanceTurn();
+        return result;
+    }
+
+    function getCurrentGameState() {
+        const currentPlayer = getCurrentPlayer();
+        const game = currentPlayer.game;
+
+        return {
+            playerId: currentPlayer.id,
+            username: currentPlayer.username,
+            dice: game.getDice(),
+            heldDice: game.getHeldDice(),
+            heldScores: game.getHeldScores(),
+            scores: game.scoreValuesForDisplay(),
+            counter: game.getCounter(),
+            totalSum: game.calculateTotalSum(),
+            upperSum: game.calculateUpperSum(),
+            bonus: game.calculateBonus()
+        };
+    }
+
+    function getScoreboard() {
+        return players.map(player => ({
+            playerId: player.id,
+            username: player.username,
+            score: player.game.calculateTotalSum(),
+            finished: player.game.isFinished()
+        }));
+    }
+
+    function isFinished() {
+        return players.every(player => player.game.isFinished());
+    }
+
+    return {
+        rollRandomDice,
+        holdDie,
+        holdScore,
+        getCurrentPlayer: () => ({
+            playerId: getCurrentPlayer().id,
+            username: getCurrentPlayer().username
+        }),
+        getCurrentGameState,
+        getScoreboard,
+        isFinished
+    };
+}
+
 
 //===========================================================
 //                      TEST FUNKTIONER

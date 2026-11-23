@@ -208,6 +208,9 @@ if (rollButton) {
 
 async function loadInitialFields() {
     try {
+        const diceValues = await rollDice();
+        renderDice(diceValues);
+
         renderHeldDice(await getHeldDice());
         const heldScores = await getHeldScores();
         renderScoreArea(await getScoreValues(), heldScores);
@@ -220,13 +223,7 @@ async function loadInitialFields() {
 }
 
 if (rollButton) { // Loader kun på spil siden
-    try {
-        const diceValues = await rollDice();
-        renderDice(diceValues);
-        loadInitialFields();
-    } catch (error) {
-            showRequestError(error);
-    }
+    loadInitialFields();
 }
 
 if (leaderboardList) { // Loader kun på forsiden
