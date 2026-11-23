@@ -1,3 +1,8 @@
+//===========================================================
+//                  STANDARD FUNKTIONER
+//===========================================================
+
+
 function countEyesInDice(diceToCount) {
     const counts = [0, 0, 0, 0, 0, 0, 0];
     for (const die of diceToCount) {

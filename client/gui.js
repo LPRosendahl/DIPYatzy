@@ -3,6 +3,7 @@ import {
     getHeldDice,
     getHeldScores,
     getLeaderboard,
+    getMultiplayerState,
     getRollCounter,
     getScoreValues,
     getTotalSum,
@@ -11,9 +12,11 @@ import {
     registerMultiplayer,
     rollDice,
     selectScore,
+    subscribeToMultiplayerEvents,
     toggleDieHold
 } from "./Facade.mjs";
 
+const multiplayerApp = document.getElementById("multiplayer-app");
 const diceImages = Array.from(document.querySelectorAll(".dice-list img"));
 const diceButtons = Array.from(document.querySelectorAll(".dice-list button"));
 const rollButton = document.getElementById("roll-button");
@@ -27,6 +30,7 @@ const usernameInput = document.getElementById("username");
 const leaderboardList = document.getElementById("leaderboard-list");
 const gameStatus = document.getElementById("game-status");
 let gameFinished = false;
+let multiplayerEvents = null;
 
 const dieImageNames = [
     "one",
@@ -61,15 +65,15 @@ function renderHeldDice(heldDice) {
     });
 }
 
-function renderScoreArea(scores, heldScores) {
+function renderScoreArea(scores, heldScores, canAct = true) {
     if (!scores || scores.length === 0) return;
 
     scoreInputs.forEach((input, index) => {
-        if (!heldScores[index]) {
+        if (!heldScores[index] || multiplayerApp) {
             input.value = scores[index] ?? 0;
         }
         input.classList.toggle("held", Boolean(heldScores[index]));
-        input.disabled = gameFinished || Boolean(heldScores[index]);
+        input.disabled = gameFinished || !canAct || Boolean(heldScores[index]);
     });
 }
 
@@ -113,6 +117,33 @@ function renderLeaderboard(entries) {
         row.className = "leaderboard-item";
         row.textContent = `${index + 1}. ${entry.username} - ${entry.score}`;
         leaderboardList.append(row);
+    });
+}
+
+function renderMultiplayerState(update) {
+    const state = update.state;
+    const isPlayersTurn = state.playerId === multiplayerApp.dataset.userId;
+    gameFinished = update.finished;
+
+    renderDice(state.dice);
+    renderHeldDice(state.heldDice);
+    renderScoreArea(state.scores, state.heldScores, isPlayersTurn);
+    renderRollCounter(state.counter);
+    renderScoreTotals(state.totalSum, state.upperSum, state.bonus);
+    renderLeaderboard(update.scoreboard);
+
+    if (gameStatus) { // Skriver hvis tur det er hen over terningerne
+        gameStatus.textContent = gameFinished
+            ? "Spillet er færdigt."
+            : isPlayersTurn
+                ? `Det er din tur, ${state.username}.`
+                : `Det er ${state.username}s tur.`;
+    }
+    if (rollButton) {
+        rollButton.disabled = gameFinished || !isPlayersTurn;
+    }
+    diceButtons.forEach(button => {
+        button.disabled = gameFinished || !isPlayersTurn;
     });
 }
 
@@ -162,6 +193,10 @@ diceButtons.forEach((button, index) => {
     button.addEventListener("click", async () => {
         try {
             const isHeld = await toggleDieHold(index);
+            if (multiplayerApp) {
+                renderMultiplayerState(await getMultiplayerState());
+                return;
+            }
             button.classList.toggle("held", isHeld);
         } catch (error) {
             showRequestError(error);
@@ -173,6 +208,10 @@ scoreInputs.forEach((input, index) => {
     input.addEventListener("click", async () => {
         try {
             await selectScore(index);
+            if (multiplayerApp) {
+                renderMultiplayerState(await getMultiplayerState());
+                return;
+            }
             renderHeldDice(await getHeldDice());
             const heldScores = await getHeldScores();
             renderScoreArea(await getScoreValues(), heldScores);
@@ -194,6 +233,10 @@ if (rollButton) {
     rollButton.addEventListener("click", async () => {
         try {
             const diceValues = await rollDice();
+            if (multiplayerApp) {
+                renderMultiplayerState(await getMultiplayerState());
+                return;
+            }
             renderDice(diceValues);
 
             renderRollCounter(await getRollCounter());
@@ -222,11 +265,24 @@ async function loadInitialFields() {
     }
 }
 
-if (rollButton) { // Loader kun på spil siden
+if (multiplayerApp) {
+    (async () => {
+        try {
+            renderMultiplayerState(await getMultiplayerState());
+            multiplayerEvents = subscribeToMultiplayerEvents((eventName, update) => {
+                if (eventName === "game-state") {
+                    renderMultiplayerState(update);
+                }
+            });
+        } catch (error) {
+            showRequestError(error);
+        }
+    })();
+} else if (rollButton) { // Loader kun på spil siden
     loadInitialFields();
 }
 
-if (leaderboardList) { // Loader kun på forsiden
+if (leaderboardList && !multiplayerApp) { // Loader kun på forsiden
     updateLeaderboard();
     window.setInterval(updateLeaderboard, 3000);
 }

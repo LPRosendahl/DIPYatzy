@@ -26,6 +26,32 @@ async function post(path, data = {}) {
     return await respons.json();
 }
 
+export async function getMultiplayerState() {
+    const response = await fetch("/multiplayer/state");
+    const result = await response.json();
+    if (!response.ok) {
+        throw new Error(result.error || response.status);
+    }
+    return result;
+}
+
+export function subscribeToMultiplayerEvents(onUpdate) {
+    const events = new EventSource("/multiplayer/events");
+    for (const eventName of ["game-state", "lobby-state"]) {
+        events.addEventListener(eventName, event => {
+            try {
+                onUpdate(eventName, JSON.parse(event.data));
+            } catch (error) {
+                console.error(`Could not process multiplayer ${eventName}:`, error);
+            }
+        });
+    }
+    events.onerror = error => {
+        console.error("Multiplayer event stream failed:", error);
+    };
+    return events;
+}
+
 export async function registerSingleplayer(username) {
     const respons = await fetch(`/singleplayer/${encodeURIComponent(username)}`, {
         method: "POST"

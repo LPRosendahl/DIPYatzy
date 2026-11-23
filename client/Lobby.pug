@@ -20,3 +20,6 @@ html(lang="da")
               th(scope="col") Spiller
           tbody#waiting-players
         p#lobby-status(aria-live="polite")
+        if isHost
+          form#start-game-form
+            button#start-game-button(type="submit", disabled=!canStart) Start spillet

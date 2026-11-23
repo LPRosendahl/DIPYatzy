@@ -3,13 +3,17 @@ import express from "express";
 import session from "express-session";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { createUser } from "./logik.js";
+import { createMultiplayerGame, createUser } from "./logik.js";
 
 const app = express();
 const port = 9123;
 const clientDirectory = path.join(path.dirname(fileURLToPath(import.meta.url)), "../client");
 const users = new Map();
 const waitingPlayers = new Map();
+const multiplayerClients = new Map(); // Aktive spiller forbindelser
+let multiplayerHostId = null;
+let multiplayerPlayers = []; // Aktive spiller objekter
+let multiplayerGame = null;
 
 app.set("views", clientDirectory);
 app.set("view engine", "pug");
@@ -39,9 +43,80 @@ function getUserForRequest(req, res) {
     return user;
 }
 
+function getMultiplayerUserForRequest(req, res) {
+    const user = getUserForRequest(req, res);
+    if (!user) return null;
+    if (user.mode !== "multiplayer") {
+        res.status(403).json({ error: "Denne side kræver en multiplayer-spiller." });
+        return null;
+    }
+    return user;
+}
+
+function isInMultiplayerGame(user) {
+    return multiplayerPlayers.some(player => player.id === user.id);
+}
+
+function getMultiplayerStateForUser(user, res) {
+    if (!multiplayerGame || !isInMultiplayerGame(user)) {
+        res.status(409).json({ error: "Multiplayer-spillet er ikke startet." });
+        return null;
+    }
+    return multiplayerGame.getCurrentGameState();
+}
+
+function getMultiplayerGameForUser(user, res) {
+    if (!multiplayerGame || !isInMultiplayerGame(user)) {
+        res.status(409).json({ error: "Du er ikke med i et aktivt multiplayer-spil." });
+        return null;
+    }
+    return multiplayerGame;
+}
+
+function writeEvent(response, eventName, data) {
+    response.write(`event: ${eventName}\ndata: ${JSON.stringify(data)}\n\n`);
+}
+
+function publishLobbyState(started = false) {
+    const data = started
+        ? { started: true }
+        : {
+            started: false,
+            players: Array.from(waitingPlayers.values())
+        };
+    const recipients = started
+        ? new Set(multiplayerPlayers.map(player => player.id))
+        : new Set(waitingPlayers.keys());
+
+    for (const [response, userId] of multiplayerClients) {
+        if (recipients.has(userId)) {
+            writeEvent(response, "lobby-state", data);
+        }
+    }
+}
+
+function getMultiplayerUpdate() {
+    return {
+        state: multiplayerGame.getCurrentGameState(),
+        currentPlayer: multiplayerGame.getCurrentPlayer(),
+        scoreboard: multiplayerGame.getScoreboard(),
+        finished: multiplayerGame.isFinished()
+    };
+}
+
+function publishMultiplayerState() {
+    if (!multiplayerGame) return;
+    const data = getMultiplayerUpdate();
+    for (const [response, userId] of multiplayerClients) {
+        if (isInMultiplayerGame({ id: userId })) {
+            writeEvent(response, "game-state", data);
+        }
+    }
+}
+
 function getFinishedGames() {
     return Array.from(users.values())
-        .filter(user => user.game.isFinished())
+        .filter(user => user.mode !== "multiplayer" && user.game.isFinished())
         .map(user => ({
             username: user.username,
             score: user.game.calculateTotalSum()
@@ -103,11 +178,23 @@ app.get("/singleplayer", (req, res) => {
 
 app.get("/lobby", (req, res) => {
     const user = getUserFromSession(req);
-    if (!user) {
+    if (!user || user.mode !== "multiplayer") {
         res.redirect("/");
         return;
     }
-    res.render("Lobby", { userName: user.username });
+    if (isInMultiplayerGame(user)) {
+        res.redirect("/multiplayer");
+        return;
+    }
+    if (!waitingPlayers.has(user.id)) {
+        res.redirect("/");
+        return;
+    }
+    res.render("Lobby", {
+        userName: user.username,
+        isHost: user.id === multiplayerHostId,
+        canStart: waitingPlayers.size >= 2
+    });
 });
 
 
@@ -123,27 +210,117 @@ app.post("/multiplayer/:name", (req, res) => {
         return res.status(409).json({ error: "Dette brugernavn er allerede taget." });
     }
 
+    if (multiplayerGame && !multiplayerGame.isFinished()) {
+        return res.status(409).json({ error: "Multiplayer-spillet er allerede startet." });
+    }
+    if (multiplayerGame?.isFinished()) {
+        multiplayerGame = null;
+        multiplayerPlayers = [];
+        multiplayerHostId = null;
+        waitingPlayers.clear();
+    }
+
     const user = createUser(username);
+    user.mode = "multiplayer";
     users.set(normalizedUsername, user);
     waitingPlayers.set(user.id, {
         id: user.id,
         username: user.username
     });
+    if (multiplayerHostId === null) {
+        multiplayerHostId = user.id;
+    }
     req.session.userId = user.id;
     res.json({ id: user.id, username: user.username });
+    publishLobbyState();
 });
 
 app.get("/lobby/players", (req, res) => {
+    const user = getMultiplayerUserForRequest(req, res);
+    if (!user) return;
+    if (!waitingPlayers.has(user.id)) {
+        return res.status(409).json({ error: "Lobbyen er ikke længere åben." });
+    }
     res.json(Array.from(waitingPlayers.values()));
 });
 
-// TODO
+app.post("/lobby/start", (req, res) => {
+    const user = getMultiplayerUserForRequest(req, res);
+    if (!user) return;
+    if (!waitingPlayers.has(user.id)) {
+        return res.status(409).json({ error: "Lobbyen er ikke længere åben." });
+    }
+    if (user.id !== multiplayerHostId) {
+        return res.status(403).json({ error: "Kun lobbyens vært må starte spillet." });
+    }
+    if (waitingPlayers.size < 2) {
+        return res.status(409).json({ error: "Der skal være mindst to spillere." });
+    }
+
+    multiplayerPlayers = Array.from(waitingPlayers.keys())
+        .map(playerId => users.get(playerId.toLowerCase()));
+    multiplayerGame = createMultiplayerGame(multiplayerPlayers);
+    multiplayerGame.rollRandomDice(multiplayerGame.getCurrentPlayer().playerId);
+    waitingPlayers.clear();
+
+    res.json({ started: true });
+    publishLobbyState(true);
+    publishMultiplayerState();
+});
+
+app.get("/multiplayer/events", (req, res) => {
+    const user = getMultiplayerUserForRequest(req, res);
+    if (!user) return;
+    const isWaiting = waitingPlayers.has(user.id);
+    const isPlaying = isInMultiplayerGame(user);
+    if (!isWaiting && !isPlaying) {
+        return res.status(403).json({ error: "Du er ikke en del af multiplayer-lobbyen." });
+    }
+
+    res.status(200);
+    res.set({
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive"
+    });
+    res.flushHeaders();
+    multiplayerClients.set(res, user.id);
+
+    if (isPlaying && multiplayerGame) {
+        writeEvent(res, "lobby-state", { started: true });
+        writeEvent(res, "game-state", getMultiplayerUpdate());
+    } else {
+        writeEvent(res, "lobby-state", {
+            started: false,
+            players: Array.from(waitingPlayers.values())
+        });
+    }
+
+    const keepAlive = setInterval(() => res.write(": keep-alive\n\n"), 25000);
+    req.on("close", () => {
+        clearInterval(keepAlive);
+        multiplayerClients.delete(res);
+    });
+});
+
 app.get("/multiplayer", (req, res) => {
-    if (!getUserFromSession(req)) {
+    const user = getUserFromSession(req);
+    if (!user || user.mode !== "multiplayer") {
         res.redirect("/");
         return;
     }
-    res.render("indexMultiplayer");
+    if (!isInMultiplayerGame(user)) {
+        res.redirect(waitingPlayers.has(user.id) ? "/lobby" : "/");
+        return;
+    }
+    res.render("indexMultiplayer", { userId: user.id });
+});
+
+app.get("/multiplayer/state", (req, res) => {
+    const user = getMultiplayerUserForRequest(req, res);
+    if (!user) return;
+    if (!getMultiplayerStateForUser(user, res)) return;
+    res.json(getMultiplayerUpdate());
 });
 
 app.get("/yatzy/leaderboard", (req, res) => {
@@ -153,42 +330,77 @@ app.get("/yatzy/leaderboard", (req, res) => {
 app.get("/yatzy/held-dice", (req, res) => {
     const user = getUserForRequest(req, res);
     if (!user) return;
+    if (user.mode === "multiplayer") {
+        const state = getMultiplayerStateForUser(user, res);
+        if (!state) return;
+        return res.json(state.heldDice);
+    }
     res.json(user.game.getHeldDice());
 });
 
 app.get("/yatzy/held-scores", (req, res) => {
     const user = getUserForRequest(req, res);
     if (!user) return;
+    if (user.mode === "multiplayer") {
+        const state = getMultiplayerStateForUser(user, res);
+        if (!state) return;
+        return res.json(state.heldScores);
+    }
     res.json(user.game.getHeldScores());
 });
 
 app.get("/yatzy/dice/counter", (req, res) => {
     const user = getUserForRequest(req, res);
     if (!user) return;
+    if (user.mode === "multiplayer") {
+        const state = getMultiplayerStateForUser(user, res);
+        if (!state) return;
+        return res.json(state.counter);
+    }
     res.json(user.game.getCounter());
 });
 
 app.get("/yatzy/dice/calculateTotalSum", (req, res) => {
     const user = getUserForRequest(req, res);
     if (!user) return;
+    if (user.mode === "multiplayer") {
+        const state = getMultiplayerStateForUser(user, res);
+        if (!state) return;
+        return res.json(state.totalSum);
+    }
     res.json(user.game.calculateTotalSum());
 });
 
 app.get("/yatzy/dice/calculateUpperSum", (req, res) => {
     const user = getUserForRequest(req, res);
     if (!user) return;
+    if (user.mode === "multiplayer") {
+        const state = getMultiplayerStateForUser(user, res);
+        if (!state) return;
+        return res.json(state.upperSum);
+    }
     res.json(user.game.calculateUpperSum());
 });
 
 app.get("/yatzy/dice/calculateBonus", (req, res) => {
     const user = getUserForRequest(req, res);
     if (!user) return;
+    if (user.mode === "multiplayer") {
+        const state = getMultiplayerStateForUser(user, res);
+        if (!state) return;
+        return res.json(state.bonus);
+    }
     res.json(user.game.calculateBonus());
 });
 
 app.get("/yatzy/dice/scoreValuesForDisplay", (req, res) => {
     const user = getUserForRequest(req, res);
     if (!user) return;
+    if (user.mode === "multiplayer") {
+        const state = getMultiplayerStateForUser(user, res);
+        if (!state) return;
+        return res.json(state.scores);
+    }
     res.json(user.game.scoreValuesForDisplay());
 });
 
@@ -200,6 +412,18 @@ app.post("/yatzy/hold-die", (req, res) => {
 
     const user = getUserForRequest(req, res);
     if (!user) return;
+    if (user.mode === "multiplayer") {
+        const game = getMultiplayerGameForUser(user, res);
+        if (!game) return;
+        try {
+            const result = game.holdDie(user.id, index);
+            res.json(result);
+            publishMultiplayerState();
+        } catch (error) {
+            res.status(409).json({ error: error.message });
+        }
+        return;
+    }
     res.json(user.game.holdDie(index));
 });
 
@@ -211,6 +435,21 @@ app.post("/yatzy/hold-score", (req, res) => {
 
     const user = getUserForRequest(req, res);
     if (!user) return;
+    if (user.mode === "multiplayer") {
+        const game = getMultiplayerGameForUser(user, res);
+        if (!game) return;
+        try {
+            const result = game.holdScore(user.id, index);
+            if (!game.isFinished()) {
+                game.rollRandomDice(game.getCurrentPlayer().playerId);
+            }
+            res.json(result);
+            publishMultiplayerState();
+        } catch (error) {
+            res.status(409).json({ error: error.message });
+        }
+        return;
+    }
     if (user.game.getHeldScores()[index]) {
         return res.status(409).json({ error: "Scorekategorien er allerede valgt." });
     }
@@ -224,6 +463,18 @@ app.post("/yatzy/hold-score", (req, res) => {
 app.post("/yatzy/roll-random-dice", (req, res) => {
     const user = getUserForRequest(req, res);
     if (!user) return;
+    if (user.mode === "multiplayer") {
+        const game = getMultiplayerGameForUser(user, res);
+        if (!game) return;
+        try {
+            const result = game.rollRandomDice(user.id);
+            res.json(result);
+            publishMultiplayerState();
+        } catch (error) {
+            res.status(409).json({ error: error.message });
+        }
+        return;
+    }
     if (user.game.isFinished()) {
         return res.status(409).json({ error: "Spillet er færdigt." });
     }
