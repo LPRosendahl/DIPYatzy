@@ -48,6 +48,24 @@ function getFinishedGames() {
         .sort((first, second) => second.score - first.score);
 }
 
+function getCurrentScores() {
+    return Array.from(users.values())
+        .filter(user => user.game.getHeldScores)
+        .map(user => ({
+            username: user.username,
+            score: user.game.calculateTotalSum()
+        }))
+        .sort((first, second) => second.score - first.score);
+}
+
+app.get("/", (req, res) => {
+    const user = getUserFromSession(req);
+    res.render("MainMenu", {
+        userName: user?.username ?? "",
+        scores: getFinishedGames()
+    });
+});
+
 app.get("/", (req, res) => {
     const user = getUserFromSession(req);
     res.render("MainMenu", {
@@ -90,6 +108,8 @@ app.get("/lobby", (req, res) => {
     res.render("Lobby", { userName: user.username });
 });
 
+
+
 app.post("/multiplayer/:name", (req, res) => {
     const username = req.params.name.trim();
     if (!username || username.length > 30) {
@@ -113,8 +133,7 @@ app.get("/multiplayer", (req, res) => {
         res.redirect("/");
         return;
     }
-    res.sendFile(path.join(clientDirectory, "index.html"));
-    
+    res.render("indexMultiplayer");
 });
 
 app.get("/yatzy/leaderboard", (req, res) => {

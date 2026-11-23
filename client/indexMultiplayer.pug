@@ -1,0 +1,76 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title DIPYatzy Multiplayer
+    link(rel="stylesheet", href="/index.css")
+    script(type="module", src="/gui.js", defer)
+  body
+    main.layout.multiplayer-layout
+      #left-column.column.left-column
+        #right-panel.panel
+          h2 Score Area
+          .score-list
+            p 1-s
+              input(type="button", value="0")
+            p 2-s
+              input(type="button", value="0")
+            p 3-s
+              input(type="button", value="0")
+            p 4-s
+              input(type="button", value="0")
+            p 5-s
+              input(type="button", value="0")
+            p 6-s
+              input(type="button", value="0")
+            p.sum-row Total:
+              output#upperSum
+            p.bonus-row Bonus:
+              output#bonus
+            p One pair
+              input(type="button", value="0")
+            p Two pairs
+              input(type="button", value="0")
+            p Three of a kind
+              input(type="button", value="0")
+            p Four of a kind
+              input(type="button", value="0")
+            p Small straight
+              input(type="button", value="0")
+            p Large straight
+              input(type="button", value="0")
+            p Full house
+              input(type="button", value="0")
+            p Chance
+              input(type="button", value="0")
+            p Yatzy
+              input(type="button", value="0")
+            br
+            p.sum-row Total:
+              output#sum
+
+        .panel.leaderboard-panel
+          .score-title-box
+            h2 Scorelist:
+          .leaderboard-list
+
+      #right-column.column.right-column
+        #game-panel.panel
+          h2 Dice
+          p#game-status
+          .dice-list
+            button(type="button")
+              img(src="images/five.png", alt="DiceOne")
+            button(type="button")
+              img(src="images/two.png", alt="DiceTwo")
+            button(type="button")
+              img(src="images/three.png", alt="DiceThree")
+            button(type="button")
+              img(src="images/four.png", alt="DiceFour")
+            button(type="button")
+              img(src="images/six.png", alt="DiceFive")
+          p
+            | Roll count:
+            input#rollCounter(type="text", readonly, value="3")
+          button#roll-button(type="button") Roll dice

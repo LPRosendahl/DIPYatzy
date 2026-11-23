@@ -10,10 +10,11 @@ html(lang="da")
       section.panel.game-lobby
         a.lobby-back(href="/") Tilbage til menu
         h1 Multiplayer-lobby
-        p.welcome-text Velkommen, #{userName}. Vælg et spil:
+        p.welcome-text #{userName}
 
-        article.game-choice-card
-          .game-choice-info
-            h2 Yatzy
-            p Spil Yatzy sammen med andre spillere.
-          a.new-game-btn(href="/multiplayer") Vælg Yatzy
+        table#waiting-players-table
+          caption Spillere:
+          thead
+            tr
+              th(scope="col") Spiller
+          tbody#waiting-players

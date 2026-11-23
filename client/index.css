@@ -23,6 +23,36 @@ body {
 	flex-direction: column; /* Stacks the score content vertically. */
 }
 
+.multiplayer-layout .left-column {
+	flex-direction: row;
+}
+
+.leaderboard-panel {
+	display: flex;
+	flex-direction: column;
+}
+
+.score-title-box {
+	padding: 12px 16px;
+	margin-bottom: 16px;
+	border: 2px solid #c9997f;
+	border-radius: 12px;
+	background: rgba(255, 253, 243, 0.6);
+}
+
+.score-title-box h2 {
+	margin: 0;
+	font-size: 22px;
+}
+
+.leaderboard-list {
+	flex: 1;
+	border: 2px solid #c9997f;
+	border-radius: 12px;
+	background: #fffdf3;
+	overflow: hidden;
+}
+
 .right-column {
 	flex: 0 1 240px;
 	flex-direction: column;
@@ -141,6 +171,11 @@ button:hover {
 
 	.layout {
 		flex-direction: column;
+	}
+
+	.multiplayer-layout .left-column {
+		flex-direction: column;
+		width: 100%;
 	}
 
 	.right-column {
