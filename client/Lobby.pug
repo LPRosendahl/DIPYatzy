@@ -5,6 +5,7 @@ html(lang="da")
     meta(name="viewport", content="width=device-width, initial-scale=1.0")
     title Vælg spil
     link(rel="stylesheet", href="/MainMenu.css")
+    script(type="module", src="/lobby.js", defer)
   body
     main.layout.lobby-layout
       section.panel.game-lobby
@@ -18,3 +19,4 @@ html(lang="da")
             tr
               th(scope="col") Spiller
           tbody#waiting-players
+        p#lobby-status(aria-live="polite")

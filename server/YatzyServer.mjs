@@ -9,6 +9,7 @@ const app = express();
 const port = 9123;
 const clientDirectory = path.join(path.dirname(fileURLToPath(import.meta.url)), "../client");
 const users = new Map();
+const waitingPlayers = new Map();
 
 app.set("views", clientDirectory);
 app.set("view engine", "pug");
@@ -74,6 +75,7 @@ app.get("/", (req, res) => {
     });
 });
 
+
 app.post("/singleplayer/:name", (req, res) => {
     const username = req.params.name.trim();
     if (!username || username.length > 30) {
@@ -123,8 +125,16 @@ app.post("/multiplayer/:name", (req, res) => {
 
     const user = createUser(username);
     users.set(normalizedUsername, user);
+    waitingPlayers.set(user.id, {
+        id: user.id,
+        username: user.username
+    });
     req.session.userId = user.id;
     res.json({ id: user.id, username: user.username });
+});
+
+app.get("/lobby/players", (req, res) => {
+    res.json(Array.from(waitingPlayers.values()));
 });
 
 // TODO
