@@ -91,7 +91,7 @@ function renderRollCounter(counter) {
 
 function renderGameStatus(heldScores) {
     gameFinished = heldScores.every(Boolean);
-    if (gameStatus && gameFinished) {
+    if (gameStatus && gameFinished && !multiplayerApp) {
         gameStatus.textContent = "Spillet er færdigt. Din score vises på forsiden.";
     }
     if (rollButton) {
