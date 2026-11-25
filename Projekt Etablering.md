@@ -28,40 +28,40 @@
 ## Trin 2 - Lav valg mellem singleplayer og multiplayer
 
 - [x] Tilføj et navnefelt og en knap til at starte singleplayer.
-- [ ] Tilføj en knap til at tilmelde sig multiplayer-lobbyen.
-- [ ] Vis tilmeldte multiplayer-spillere i menuen.
-- [ ] Tilføj en startknap, som først kan bruges, når mindst to spillere er tilmeldt.
-- [ ] Forhindr nye tilmeldinger, efter multiplayer-spillet er startet.
+- [x] Tilføj en knap til at tilmelde sig multiplayer-lobbyen.
+- [x] Vis tilmeldte multiplayer-spillere i menuen.
+- [x] Tilføj en startknap, som først kan bruges, når mindst to spillere er tilmeldt.
+- [x] Forhindr nye tilmeldinger, efter multiplayer-spillet er startet.
 
 **Hvorfor nu:** Serveren skal vide, hvem der spiller, og hvilken spiltype der vælges, før den kan oprette den rigtige spiltilstand.
 
 ## Trin 3 - Gem spiller og spiltilstand på serveren
 
-- [ ] Knyt spillerens navn og spiltype til spillerens session.
-- [ ] Giv hver singleplayer og multiplayer-spiller sit eget terninge- og scorekort.
-- [ ] Lad kun den aktive spiller udføre handlinger i multiplayer.
-- [ ] Gå videre til næste spiller, når den aktive spiller vælger en scorekategori.
-- [ ] Aftal og implementér, hvornår multiplayer-spillet slutter.
+- [x] Knyt spillerens navn og spiltype til spillerens session.
+- [x] Giv hver singleplayer og multiplayer-spiller sit eget terninge- og scorekort.
+- [x] Lad kun den aktive spiller udføre handlinger i multiplayer.
+- [x] Gå videre til næste spiller, når den aktive spiller vælger en scorekategori.
+- [x] Aftal og implementér, hvornår multiplayer-spillet slutter.
 
 **Hvorfor nu:** Først når serveren holder styr på spillere og ture, kan klienten vise korrekte data og forhindre handlinger på andres ture.
 
 ## Trin 4 - Vis og opdatér scoreboardet
 
-- [x] Vis spillernes aktuelle totalscore i menuens scoreboard.
-- [ ] Vis multiplayer scoreboard til højre på spilsiden.
-- [ ] Opdatér scoreboardet efter hvert scorevalg.
-- [ ] Vis hvis det er spillerens tur, eller hvem der skal spille.
-- [ ] Deaktivér spilhandlinger, når det ikke er spillerens tur.
+- [x] Vis singleplayer spillernes aktuelle totalscore i menuens scoreboard.
+- [x] Vis multiplayer scoreboard til højre på spilsiden.
+- [x] Opdatér scoreboardet efter hvert scorevalg.
+- [x] Vis hvis det er spillerens tur, eller hvem der skal spille.
+- [x] Deaktivér spilhandlinger, når det ikke er spillerens tur.
 
 **Hvorfor nu:** Scoreboard og turstatus kræver spiller- og scoredata fra serveren.
 
 ## Trin 5 - Test hele spilforløbet
 
 - [x] Test singleplayer fra menu til afsluttet scorekort.
-- [ ] Test multiplayer med mindst to separate browser-sessioner.
-- [ ] Kontrollér, at spillerne får ture i tilmeldingsrækkefølge.
-- [ ] Kontrollér, at scoreboardet ændres efter hvert scorevalg.
-- [ ] Test serveren på localhost.
+- [x] Test multiplayer med mindst to separate browser-sessioner.
+- [x] Kontrollér, at spillerne får ture i tilmeldingsrækkefølge.
+- [x] Kontrollér, at scoreboardet ændres efter hvert scorevalg.
+- [x] Test serveren på localhost.
 - [x] Test tilslutning fra en anden enhed på samme netværk via serverens IP-adresse.
 
 **Hvorfor til sidst:** Når sider, sessioner og API-kald er samlet, kan hele forløbet testes på samme måde, som det skal bruges.

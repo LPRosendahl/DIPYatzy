@@ -1,9 +1,15 @@
-import { randomBytes } from "node:crypto";
+import "dotenv/config";
+import { randomBytes, randomUUID } from "node:crypto";
 import express from "express";
 import session from "express-session";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { applicationDefault, initializeApp } from "firebase-admin/app";
+import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { createMultiplayerGame, createUser } from "./logik.js";
+
+initializeApp({ credential: applicationDefault() });
+const firestore = getFirestore();
 
 const app = express();
 const port = 9123;
@@ -114,14 +120,31 @@ function publishMultiplayerState() {
     }
 }
 
-function getFinishedGames() {
-    return Array.from(users.values())
-        .filter(user => user.mode !== "multiplayer" && user.game.isFinished())
-        .map(user => ({
+async function getFinishedGames() {
+    const snapshot = await firestore.collection("singleplayerScores")
+        .orderBy("score", "desc")
+        .get();
+    return snapshot.docs.map(document => {
+        const score = document.data();
+        return {
+            username: score.username,
+            score: score.score
+        };
+    });
+}
+
+async function saveSingleplayerScore(user) {
+    if (user.singleplayerScoreSaved) return;
+
+    await firestore.collection("singleplayerScores")
+        .doc(user.singleplayerScoreId)
+        .set({
             username: user.username,
-            score: user.game.calculateTotalSum()
-        }))
-        .sort((first, second) => second.score - first.score);
+            score: user.game.calculateTotalSum(),
+            completedAt: FieldValue.serverTimestamp()
+        });
+
+    user.singleplayerScoreSaved = true;
 }
 
 function getCurrentScores() {
@@ -134,20 +157,17 @@ function getCurrentScores() {
         .sort((first, second) => second.score - first.score);
 }
 
-app.get("/", (req, res) => {
+app.get("/", async (req, res) => {
     const user = getUserFromSession(req);
-    res.render("MainMenu", {
-        userName: user?.username ?? "",
-        scores: getFinishedGames()
-    });
-});
-
-app.get("/", (req, res) => {
-    const user = getUserFromSession(req);
-    res.render("MainMenu", {
-        userName: user?.username ?? "",
-        scores: getFinishedGames()
-    });
+    try {
+        res.render("MainMenu", {
+            userName: user?.username ?? "",
+            scores: await getFinishedGames()
+        });
+    } catch (error) {
+        console.error("Could not load singleplayer leaderboard:", error);
+        res.status(500).send("Kunne ikke hente scorelisten.");
+    }
 });
 
 
@@ -163,6 +183,8 @@ app.post("/singleplayer/:name", (req, res) => {
     }
 
     const user = createUser(username);
+    user.singleplayerScoreId = randomUUID();
+    user.singleplayerScoreSaved = false;
     users.set(normalizedUsername, user);
     req.session.userId = user.id;
     res.json({ id: user.id, username: user.username });
@@ -323,8 +345,13 @@ app.get("/multiplayer/state", (req, res) => {
     res.json(getMultiplayerUpdate());
 });
 
-app.get("/yatzy/leaderboard", (req, res) => {
-    res.json(getFinishedGames());
+app.get("/yatzy/leaderboard", async (req, res) => {
+    try {
+        res.json(await getFinishedGames());
+    } catch (error) {
+        console.error("Could not load singleplayer leaderboard:", error);
+        res.status(500).json({ error: "Kunne ikke hente scorelisten." });
+    }
 });
 
 app.get("/yatzy/held-dice", (req, res) => {
@@ -450,14 +477,35 @@ app.post("/yatzy/hold-score", (req, res) => {
         }
         return;
     }
+    if (user.game.isFinished()) {
+        if (!user.game.getHeldScores()[index]) {
+            return res.status(409).json({ error: "Spillet er allerede færdigt." });
+        }
+        saveSingleplayerScore(user)
+            .then(() => res.json(true))
+            .catch(error => {
+                console.error("Could not save completed singleplayer score:", error);
+                res.status(503).json({ error: "Scoren kunne ikke gemmes. Prøv igen." });
+            });
+        return;
+    }
+
     if (user.game.getHeldScores()[index]) {
         return res.status(409).json({ error: "Scorekategorien er allerede valgt." });
     }
-    if (user.game.isFinished()) {
-        return res.status(409).json({ error: "Spillet er allerede færdigt." });
+
+    const result = user.game.holdScore(index);
+    if (!user.game.isFinished()) {
+        res.json(result);
+        return;
     }
 
-    res.json(user.game.holdScore(index));
+    saveSingleplayerScore(user)
+        .then(() => res.json(result))
+        .catch(error => {
+            console.error("Could not save completed singleplayer score:", error);
+            res.status(503).json({ error: "Scoren kunne ikke gemmes. Prøv igen." });
+        });
 });
 
 app.post("/yatzy/roll-random-dice", (req, res) => {
