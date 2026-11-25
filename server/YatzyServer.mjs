@@ -147,16 +147,6 @@ async function saveSingleplayerScore(user) {
     user.singleplayerScoreSaved = true;
 }
 
-function getCurrentScores() {
-    return Array.from(users.values())
-        .filter(user => user.game.getHeldScores)
-        .map(user => ({
-            username: user.username,
-            score: user.game.calculateTotalSum()
-        }))
-        .sort((first, second) => second.score - first.score);
-}
-
 app.get("/", async (req, res) => {
     const user = getUserFromSession(req);
     try {
@@ -299,7 +289,6 @@ app.get("/multiplayer/events", (req, res) => {
         return res.status(403).json({ error: "Du er ikke en del af multiplayer-lobbyen." });
     }
 
-    res.status(200);
     res.set({
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
@@ -308,7 +297,7 @@ app.get("/multiplayer/events", (req, res) => {
     res.flushHeaders();
     multiplayerClients.set(res, user.id);
 
-    if (isPlaying && multiplayerGame) {
+    if (isPlaying) {
         writeEvent(res, "lobby-state", { started: true });
         writeEvent(res, "game-state", getMultiplayerUpdate());
     } else {
@@ -478,9 +467,6 @@ app.post("/yatzy/hold-score", (req, res) => {
         return;
     }
     if (user.game.isFinished()) {
-        if (!user.game.getHeldScores()[index]) {
-            return res.status(409).json({ error: "Spillet er allerede færdigt." });
-        }
         saveSingleplayerScore(user)
             .then(() => res.json(true))
             .catch(error => {
